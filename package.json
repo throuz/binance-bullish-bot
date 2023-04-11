@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "axios": "^1.2.2"
+  },
+  "scripts": {
+    "start:dev": "TZ=Asia/Taipei NODE_ENV=development node app",
+    "start:prod": "TZ=Asia/Taipei NODE_ENV=production node app"
+  },
+  "type": "module"
+}
