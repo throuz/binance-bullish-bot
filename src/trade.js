@@ -20,8 +20,8 @@ const newOrder = async (side, quantity) => {
       ...totalParams,
       signature
     });
-    log(`New ${side} order!`);
-    await sendLineNotify(`New ${side} order!`);
+    log(`New order! ${side} ${quantity}`);
+    await sendLineNotify(`New order! ${side} ${quantity}`);
   } catch (error) {
     await handleAPIError(error);
   }
