@@ -2,12 +2,11 @@ import crypto from "node:crypto";
 import querystring from "node:querystring";
 import env from "../configs/env.js";
 import tradeConfig from "../configs/trade-config.js";
-import { binanceFuturesAPI, taAPI } from "./web-services.js";
-import { handleAPIError, log } from "./common.js";
+import { binanceFuturesAPI } from "./web-services.js";
+import { handleAPIError } from "./common.js";
 
 const { SECRET_KEY } = env;
-const { QUOTE_ASSET, SYMBOL, LEVERAGE, RSI_OVERBOUGHT, RSI_OVERSOLD } =
-  tradeConfig;
+const { QUOTE_ASSET, SYMBOL, LEVERAGE } = tradeConfig;
 
 const getSignature = (totalParams) => {
   const queryString = querystring.stringify(totalParams);
@@ -98,23 +97,6 @@ const getAllowableQuantity = async () => {
   }
 };
 
-const getSignal = async () => {
-  try {
-    const response = await taAPI.get("/rsi");
-    const RSI = response.data.value;
-    log(`RSI: ${RSI}`);
-    if (RSI < RSI_OVERSOLD) {
-      return "BUY";
-    }
-    if (RSI > RSI_OVERBOUGHT) {
-      return "SELL";
-    }
-    return "NONE";
-  } catch (error) {
-    await handleAPIError(error);
-  }
-};
-
 const getPositionDirection = (positionAmount) => {
   if (positionAmount > 0) {
     return "BUY";
@@ -133,6 +115,5 @@ export {
   getAvailableQuantity,
   getPositionAmount,
   getAllowableQuantity,
-  getSignal,
   getPositionDirection
 };

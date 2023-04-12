@@ -3,11 +3,11 @@ import { log } from "./src/common.js";
 import {
   getPositionAmount,
   getOppositeSide,
-  getSignal,
   getPositionDirection,
   getAvailableQuantity,
   getAllowableQuantity
 } from "./src/helpers.js";
+import getSignal from "./src/getSignal.js";
 import { newOrder } from "./src/trade.js";
 
 const { INITIAL_QUANTITY, POSITION_SCALE_OUT_RATE } = tradeConfig;
