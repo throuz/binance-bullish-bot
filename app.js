@@ -46,10 +46,23 @@ const closePosition = async (signal) => {
 };
 
 const check = async () => {
-  const signal = await getSignal();
-  if (signal !== "NONE") {
-    await closePosition(signal);
-    await openPosition(signal);
+  try {
+    const signal = await getSignal();
+    if (signal !== "NONE") {
+      await closePosition(signal);
+      await openPosition(signal);
+    }
+  } catch (error) {
+    if (error.response) {
+      console.log(error.response.data);
+      console.log(error.response.status);
+      console.log(error.response.headers);
+    } else if (error.request) {
+      console.log(error.request);
+    } else {
+      console.log("Error", error.message);
+    }
+    console.log(error.config);
   }
 };
 
