@@ -1,7 +1,7 @@
 import { lineNotifyAPI } from "./web-services.js";
 
 const sendLineNotify = async (msg) => {
-  await lineNotifyAPI.post("/api/notify", { message: `\n${msg}` });
+  await lineNotifyAPI.post("/api/notify", { message: msg });
 };
 
 const logWithTime = (msg) => {

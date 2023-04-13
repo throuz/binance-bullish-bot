@@ -1,5 +1,5 @@
 import tradeConfig from "./configs/trade-config.js";
-import { logWithTime } from "./src/common.js";
+import { sendLineNotify, logWithTime } from "./src/common.js";
 import {
   getPositionAmount,
   getOppositeSide,
@@ -45,12 +45,19 @@ const check = async () => {
     }
   } catch (error) {
     if (error.response) {
+      sendLineNotify(
+        "The request was made and the server responded with a status code that falls out of the range of 2xx"
+      );
       console.log(error.response.data);
       console.log(error.response.status);
       console.log(error.response.headers);
     } else if (error.request) {
+      sendLineNotify("The request was made but no response was received");
       console.log(error.request);
     } else {
+      sendLineNotify(
+        "Something happened in setting up the request that triggered an Error"
+      );
       console.log("Error", error.message);
     }
     console.log(error.config);
