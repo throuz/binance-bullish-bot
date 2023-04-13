@@ -19,7 +19,6 @@ const getSignature = (totalParams) => {
 const getAvailableBalance = async () => {
   const totalParams = { timestamp: Date.now() };
   const signature = getSignature(totalParams);
-
   const response = await binanceFuturesAPI.get("/fapi/v1/balance", {
     params: { ...totalParams, signature }
   });
@@ -31,20 +30,10 @@ const getAvailableBalance = async () => {
 
 const getMarkPrice = async () => {
   const totalParams = { symbol: SYMBOL };
-
   const response = await binanceFuturesAPI.get("/fapi/v1/premiumIndex", {
     params: totalParams
   });
   return response.data.markPrice;
-};
-
-const getOppositeSide = (side) => {
-  if (side === "BUY") {
-    return "SELL";
-  }
-  if (side === "SELL") {
-    return "BUY";
-  }
 };
 
 const getAvailableQuantity = async () => {
@@ -56,20 +45,9 @@ const getAvailableQuantity = async () => {
   return Math.trunc((availableFunds / markPrice) * 1000) / 1000;
 };
 
-const getPositionAmount = async () => {
-  const totalParams = { symbol: SYMBOL, timestamp: Date.now() };
-  const signature = getSignature(totalParams);
-
-  const response = await binanceFuturesAPI.get("/fapi/v2/positionRisk", {
-    params: { ...totalParams, signature }
-  });
-  return response.data[0].positionAmt;
-};
-
 const getAllowableQuantity = async () => {
   const totalParams = { symbol: SYMBOL, timestamp: Date.now() };
   const signature = getSignature(totalParams);
-
   const response = await binanceFuturesAPI.get("/fapi/v2/positionRisk", {
     params: { ...totalParams, signature }
   });
@@ -78,6 +56,32 @@ const getAllowableQuantity = async () => {
   const maxAllowableQuantity =
     Math.trunc((maxNotionalValue / markPrice) * 1000) / 1000;
   return maxAllowableQuantity - Math.abs(positionAmt);
+};
+
+const getInvestableQuantity = async () => {
+  const [availableQuantity, allowableQuantity] = await Promise.all([
+    getAvailableQuantity(),
+    getAllowableQuantity()
+  ]);
+  return Math.min(availableQuantity, allowableQuantity);
+};
+
+const getOppositeSide = (side) => {
+  if (side === "BUY") {
+    return "SELL";
+  }
+  if (side === "SELL") {
+    return "BUY";
+  }
+};
+
+const getPositionAmount = async () => {
+  const totalParams = { symbol: SYMBOL, timestamp: Date.now() };
+  const signature = getSignature(totalParams);
+  const response = await binanceFuturesAPI.get("/fapi/v2/positionRisk", {
+    params: { ...totalParams, signature }
+  });
+  return response.data[0].positionAmt;
 };
 
 const getPositionDirection = (positionAmount) => {
@@ -94,9 +98,10 @@ export {
   getSignature,
   getAvailableBalance,
   getMarkPrice,
-  getOppositeSide,
   getAvailableQuantity,
-  getPositionAmount,
   getAllowableQuantity,
+  getInvestableQuantity,
+  getOppositeSide,
+  getPositionAmount,
   getPositionDirection
 };
