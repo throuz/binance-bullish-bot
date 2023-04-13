@@ -1,6 +1,6 @@
 import tradeConfig from "../configs/trade-config.js";
 import { binanceFuturesAPI } from "./web-services.js";
-import { sendLineNotify, logWithTime } from "./common.js";
+import { sendLineNotify } from "./common.js";
 import {
   getSignature,
   getPositionAmount,
@@ -25,7 +25,6 @@ const newOrder = async (side, quantity) => {
     ...totalParams,
     signature
   });
-  logWithTime(`New order! ${side} ${quantity}`);
   await sendLineNotify(`New order! ${side} ${quantity}`);
 };
 
@@ -34,7 +33,6 @@ const openPosition = async (signal) => {
   if (investableQuantity >= ORDER_QUANTITY) {
     await newOrder(signal, ORDER_QUANTITY);
   } else {
-    logWithTime("Insufficient quantity, unable to place an order!");
     await sendLineNotify("Insufficient quantity, unable to place an order!");
   }
 };
