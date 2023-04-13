@@ -2,7 +2,7 @@ import { errorHandler } from "./src/common.js";
 import { getSignal } from "./src/signal.js";
 import { openPosition, closePosition } from "./src/trade.js";
 
-const check = async () => {
+const trade = async () => {
   try {
     const signal = await getSignal();
     if (signal !== "NONE") {
@@ -14,7 +14,7 @@ const check = async () => {
   }
 };
 
-check();
+trade();
 setInterval(() => {
-  check();
+  trade();
 }, 60000);
