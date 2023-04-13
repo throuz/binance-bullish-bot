@@ -1,8 +1,8 @@
-import env from "../configs/env.js";
+import envConfig from "../configs/env-config.js";
 import tradeConfig from "../configs/trade-config.js";
 import { taAPI } from "./web-services.js";
 
-const { TAAPI_SECRET } = env;
+const { TAAPI_SECRET } = envConfig;
 const { BASE_ASSET, QUOTE_ASSET } = tradeConfig;
 
 const getSignals = async () => {

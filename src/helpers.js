@@ -1,10 +1,10 @@
 import crypto from "node:crypto";
 import querystring from "node:querystring";
-import env from "../configs/env.js";
+import envConfig from "../configs/env-config.js";
 import tradeConfig from "../configs/trade-config.js";
 import { binanceFuturesAPI } from "./web-services.js";
 
-const { SECRET_KEY } = env;
+const { SECRET_KEY } = envConfig;
 const { QUOTE_ASSET, SYMBOL, LEVERAGE } = tradeConfig;
 
 const getSignature = (totalParams) => {
