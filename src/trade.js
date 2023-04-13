@@ -8,7 +8,6 @@ import {
   getPositionDirection,
   getInvestableQuantity
 } from "./helpers.js";
-import { newOrder } from "./src/trade.js";
 
 const { SYMBOL, ORDER_QUANTITY } = tradeConfig;
 
