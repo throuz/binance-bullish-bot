@@ -1,6 +1,6 @@
 import tradeConfig from "../configs/trade-config.js";
 import { binanceFuturesAPI } from "./web-services.js";
-import { sendLineNotify, log } from "./common.js";
+import { sendLineNotify, logWithTime } from "./common.js";
 import { getSignature } from "./helpers.js";
 
 const { SYMBOL } = tradeConfig;
@@ -19,7 +19,7 @@ const newOrder = async (side, quantity) => {
     ...totalParams,
     signature
   });
-  log(`New order! ${side} ${quantity}`);
+  logWithTime(`New order! ${side} ${quantity}`);
   await sendLineNotify(`New order! ${side} ${quantity}`);
 };
 

@@ -1,5 +1,5 @@
 import tradeConfig from "./configs/trade-config.js";
-import { log } from "./src/common.js";
+import { logWithTime } from "./src/common.js";
 import {
   getPositionAmount,
   getOppositeSide,
@@ -29,7 +29,7 @@ const openPosition = async (signal) => {
     await newOrder(signal, orderQuantity);
     addPositionTimes++;
   } else {
-    log("Insufficient quantity, unable to place an order!");
+    logWithTime("Insufficient quantity, unable to place an order!");
   }
 };
 
