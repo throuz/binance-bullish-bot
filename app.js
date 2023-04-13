@@ -1,5 +1,5 @@
 import { errorHandler } from "./src/common.js";
-import getSignal from "./src/getSignal.js";
+import { getSignal } from "./src/signal.js";
 import { openPosition, closePosition } from "./src/trade.js";
 
 const check = async () => {

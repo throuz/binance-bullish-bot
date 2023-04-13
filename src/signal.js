@@ -143,4 +143,4 @@ const getSignal = async () => {
   return "NONE";
 };
 
-export default getSignal;
+export { getSignal };
