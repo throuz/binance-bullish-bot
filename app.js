@@ -10,9 +10,7 @@ import {
 import getSignal from "./src/getSignal.js";
 import { newOrder } from "./src/trade.js";
 
-const { INITIAL_QUANTITY, POSITION_SCALE_OUT_RATE } = tradeConfig;
-
-let addPositionTimes = 0;
+const { ORDER_QUANTITY } = tradeConfig;
 
 const openPosition = async (signal) => {
   const [availableQuantity, allowableQuantity] = await Promise.all([
@@ -20,14 +18,8 @@ const openPosition = async (signal) => {
     getAllowableQuantity()
   ]);
 
-  const orderQuantity =
-    Math.trunc(
-      INITIAL_QUANTITY * POSITION_SCALE_OUT_RATE ** addPositionTimes * 1000
-    ) / 1000;
-
-  if (Math.min(availableQuantity, allowableQuantity) >= orderQuantity) {
-    await newOrder(signal, orderQuantity);
-    addPositionTimes++;
+  if (Math.min(availableQuantity, allowableQuantity) >= ORDER_QUANTITY) {
+    await newOrder(signal, ORDER_QUANTITY);
   } else {
     logWithTime("Insufficient quantity, unable to place an order!");
   }
@@ -39,7 +31,6 @@ const closePosition = async (signal) => {
   const oppositeSignal = getOppositeSide(signal);
 
   if (positionDirection === oppositeSignal) {
-    addPositionTimes = 0;
     const closeQuantity = Math.abs(positionAmount);
     await newOrder(signal, closeQuantity);
   }
