@@ -130,7 +130,7 @@ const getSignal = async () => {
   const signals = await getSignals();
   const buyCount = signals.filter((signal) => signal === "BUY").length;
   const sellCount = signals.filter((signal) => signal === "SELL").length;
-  const halfLengthOfSignals = Math.floor(signals.length / 2);
+  const halfLengthOfSignals = signals.length / 2;
   if (buyCount > halfLengthOfSignals) {
     return "BUY";
   }
