@@ -11,7 +11,7 @@ const getSignals = async () => {
     construct: {
       exchange: "binance",
       symbol: `${BASE_ASSET}/${QUOTE_ASSET}`,
-      interval: "1m",
+      interval: "5m",
       indicators: [
         { id: "cci", indicator: "cci" },
         { id: "cmf", indicator: "cmf" },

@@ -17,4 +17,4 @@ const trade = async () => {
 trade();
 setInterval(() => {
   trade();
-}, 60000);
+}, 300000);
