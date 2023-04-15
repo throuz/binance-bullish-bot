@@ -3,7 +3,7 @@ import tradeConfig from "../configs/trade-config.js";
 import { taAPI } from "./web-services.js";
 
 const { TAAPI_SECRET } = envConfig;
-const { BASE_ASSET, QUOTE_ASSET } = tradeConfig;
+const { BASE_ASSET, QUOTE_ASSET, INTERVAL } = tradeConfig;
 
 const getSignals = async () => {
   const response = await taAPI.post("/bulk", {
@@ -11,7 +11,7 @@ const getSignals = async () => {
     construct: {
       exchange: "binance",
       symbol: `${BASE_ASSET}/${QUOTE_ASSET}`,
-      interval: "5m",
+      interval: INTERVAL,
       indicators: [
         { id: "cci", indicator: "cci" },
         { id: "cmf", indicator: "cmf" },

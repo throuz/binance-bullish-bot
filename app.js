@@ -1,6 +1,9 @@
+import tradeConfig from "./configs/trade-config.js";
 import { errorHandler } from "./src/common.js";
 import { getSignal } from "./src/signal.js";
 import { openPosition, closePosition } from "./src/trade.js";
+
+const { INTERVAL_TIME } = tradeConfig;
 
 const trade = async () => {
   try {
@@ -17,4 +20,4 @@ const trade = async () => {
 trade();
 setInterval(() => {
   trade();
-}, 300000);
+}, INTERVAL_TIME);
