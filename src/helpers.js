@@ -5,7 +5,15 @@ import tradeConfig from "../configs/trade-config.js";
 import { binanceFuturesAPI } from "./web-services.js";
 
 const { SECRET_KEY } = envConfig;
-const { QUOTE_ASSET, SYMBOL, LEVERAGE } = tradeConfig;
+const {
+  QUOTE_ASSET,
+  SYMBOL,
+  LEVERAGE,
+  INTERVAL,
+  KLINE_LIMIT,
+  FIBONACCI_RATIOS,
+  ORDER_AMOUNT_PERCENTAGE
+} = tradeConfig;
 
 const getSignature = (totalParams) => {
   const queryString = querystring.stringify(totalParams);
@@ -19,12 +27,12 @@ const getSignature = (totalParams) => {
 const getAvailableBalance = async () => {
   const totalParams = { timestamp: Date.now() };
   const signature = getSignature(totalParams);
-  const response = await binanceFuturesAPI.get("/fapi/v1/balance", {
+  const response = await binanceFuturesAPI.get("/fapi/v2/balance", {
     params: { ...totalParams, signature }
   });
   const availableBalance = response.data.find(
     ({ asset }) => asset === QUOTE_ASSET
-  ).withdrawAvailable;
+  ).availableBalance;
   return availableBalance;
 };
 
@@ -66,32 +74,81 @@ const getInvestableQuantity = async () => {
   return Math.min(availableQuantity, allowableQuantity);
 };
 
-const getOppositeSide = (side) => {
-  if (side === "BUY") {
-    return "SELL";
-  }
-  if (side === "SELL") {
-    return "BUY";
-  }
-};
-
-const getPositionAmount = async () => {
+const getHasPosition = async () => {
   const totalParams = { symbol: SYMBOL, timestamp: Date.now() };
   const signature = getSignature(totalParams);
   const response = await binanceFuturesAPI.get("/fapi/v2/positionRisk", {
     params: { ...totalParams, signature }
   });
-  return response.data[0].positionAmt;
+  return response.data[0].positionAmt > 0;
 };
 
-const getPositionDirection = (positionAmount) => {
-  if (positionAmount > 0) {
-    return "BUY";
+const getHasLimitOrder = async () => {
+  const totalParams = { symbol: SYMBOL, timestamp: Date.now() };
+  const signature = getSignature(totalParams);
+  const response = await binanceFuturesAPI.get("/fapi/v1/openOrders", {
+    params: { ...totalParams, signature }
+  });
+  return response.data.some((order) => order.type === "LIMIT");
+};
+
+const getAllowNewOrders = async () => {
+  const hasPosition = await getHasPosition();
+  if (hasPosition) {
+    return false;
   }
-  if (positionAmount < 0) {
-    return "SELL";
+  const hasLimitOrder = await getHasLimitOrder();
+  if (hasLimitOrder) {
+    return false;
   }
-  return "NONE";
+  return true;
+};
+
+const getTrendExtrema = async () => {
+  const totalParams = {
+    symbol: SYMBOL,
+    interval: INTERVAL,
+    limit: KLINE_LIMIT
+  };
+  const response = await binanceFuturesAPI.get("/fapi/v1/markPriceKlines", {
+    params: totalParams
+  });
+  const highPriceArray = response.data.map((kline) => kline[2]);
+  const highestPrice = Math.max(...highPriceArray);
+  const lowPriceArray = response.data.map((kline) => kline[3]);
+  const lowestPrice = Math.min(...lowPriceArray);
+  return { highestPrice, lowestPrice };
+};
+
+const getFibonacciLevels = async () => {
+  const { highestPrice, lowestPrice } = await getTrendExtrema();
+  const priceDifference = highestPrice - lowestPrice;
+  const fibonacciLevels = FIBONACCI_RATIOS.map(
+    (ratio) => lowestPrice + priceDifference * ratio
+  );
+  return fibonacciLevels;
+};
+
+const getTPSL = (price, levels) => {
+  const differenceArray = levels.map((level) => Math.abs(level - price));
+  const minDifference = Math.min(...differenceArray);
+  const targetIndex = differenceArray.findIndex(
+    (diff) => diff === minDifference
+  );
+  const takeProfitPrice = levels[targetIndex + 2];
+  const stopLossPrice = levels[targetIndex - 1];
+  return { takeProfitPrice, stopLossPrice };
+};
+
+const roundToDecimalPlace = (number, decimalPlaces) => {
+  const multiplier = Math.pow(10, decimalPlaces);
+  return Math.round(number * multiplier) / multiplier;
+};
+
+const getOrderQuantity = async () => {
+  const investableQuantity = await getInvestableQuantity();
+  const orderQuantity = investableQuantity * (ORDER_AMOUNT_PERCENTAGE / 100);
+  return orderQuantity;
 };
 
 export {
@@ -101,7 +158,12 @@ export {
   getAvailableQuantity,
   getAllowableQuantity,
   getInvestableQuantity,
-  getOppositeSide,
-  getPositionAmount,
-  getPositionDirection
+  getHasPosition,
+  getHasLimitOrder,
+  getAllowNewOrders,
+  getTrendExtrema,
+  getFibonacciLevels,
+  getTPSL,
+  roundToDecimalPlace,
+  getOrderQuantity
 };

@@ -19,6 +19,4 @@ const binanceFuturesAPI = axios.create({
   }
 });
 
-const taAPI = axios.create({ baseURL: "https://api.taapi.io" });
-
-export { lineNotifyAPI, binanceFuturesAPI, taAPI };
+export { lineNotifyAPI, binanceFuturesAPI };
