@@ -6,7 +6,8 @@ import {
   getTPSL,
   roundToDecimalPlace,
   getAllowNewOrders,
-  getOrderQuantity
+  getOrderQuantity,
+  getPrecisions
 } from "./src/helpers.js";
 import { placeMultipleOrders } from "./src/trade.js";
 
@@ -25,11 +26,13 @@ const executeTradingStrategy = async () => {
           markPrice,
           fibonacciLevels
         );
+        const precisions = await getPrecisions();
+        const { quantityPrecision, pricePrecision } = precisions;
         await placeMultipleOrders(
-          roundToDecimalPlace(orderQuantity, 3),
-          roundToDecimalPlace(markPrice, 1),
-          roundToDecimalPlace(takeProfitPrice, 1),
-          roundToDecimalPlace(stopLossPrice, 1)
+          roundToDecimalPlace(orderQuantity, quantityPrecision),
+          roundToDecimalPlace(markPrice, pricePrecision),
+          roundToDecimalPlace(takeProfitPrice, pricePrecision),
+          roundToDecimalPlace(stopLossPrice, pricePrecision)
         );
       }
     }

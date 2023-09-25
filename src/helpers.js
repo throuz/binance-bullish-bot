@@ -24,6 +24,20 @@ const getSignature = (totalParams) => {
   return signature;
 };
 
+const getPrecisions = async () => {
+  const response = await binanceFuturesAPI.get("/fapi/v1/exchangeInfo");
+  const symbolData = response.data.symbols.find(
+    (item) => item.symbol === SYMBOL
+  );
+  const { quantityPrecision } = symbolData;
+  const priceFilterData = symbolData.filters.find(
+    (filter) => filter.filterType === "PRICE_FILTER"
+  );
+  const tickSizeString = String(Number(priceFilterData.tickSize));
+  const pricePrecision = tickSizeString.split(".")[1].length;
+  return { quantityPrecision, pricePrecision };
+};
+
 const getAvailableBalance = async () => {
   const totalParams = { timestamp: Date.now() };
   const signature = getSignature(totalParams);
@@ -153,6 +167,7 @@ const getOrderQuantity = async () => {
 
 export {
   getSignature,
+  getPrecisions,
   getAvailableBalance,
   getMarkPrice,
   getAvailableQuantity,
