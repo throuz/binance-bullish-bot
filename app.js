@@ -1,5 +1,5 @@
-import tradeConfig from "./configs/trade-config.js";
-import { errorHandler } from "./src/common.js";
+import schedule from "node-schedule";
+import { errorHandler, logWithTime } from "./src/common.js";
 import {
   getFibonacciLevels,
   getMarkPrice,
@@ -10,16 +10,16 @@ import {
 } from "./src/helpers.js";
 import { placeMultipleOrders } from "./src/trade.js";
 
-const { RUN_STRATEGY_INTERVAL } = tradeConfig;
-
 const executeTradingStrategy = async () => {
   try {
     const allowNewOrders = await getAllowNewOrders();
+    logWithTime(`allowNewOrders: ${allowNewOrders}`);
     if (allowNewOrders) {
       const markPrice = await getMarkPrice();
       const fibonacciLevels = await getFibonacciLevels();
-      const isInSaveZone = markPrice > fibonacciLevels[1];
-      if (isInSaveZone) {
+      const isPriceInSafeZone = markPrice > fibonacciLevels[1];
+      logWithTime(`isPriceInSafeZone: ${isPriceInSafeZone}`);
+      if (isPriceInSafeZone) {
         const orderQuantity = await getOrderQuantity();
         const { takeProfitPrice, stopLossPrice } = getTPSL(
           markPrice,
@@ -39,6 +39,6 @@ const executeTradingStrategy = async () => {
 };
 
 executeTradingStrategy();
-setInterval(() => {
+schedule.scheduleJob("*/1 * * * *", () => {
   executeTradingStrategy();
-}, RUN_STRATEGY_INTERVAL);
+});
