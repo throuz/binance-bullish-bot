@@ -58,6 +58,11 @@ const getMarkPrice = async () => {
   return response.data.markPrice;
 };
 
+const getAllMarkPrice = async () => {
+  const response = await binanceFuturesAPI.get("/fapi/v1/premiumIndex");
+  return response.data;
+};
+
 const getAvailableQuantity = async () => {
   const [availableBalance, markPrice] = await Promise.all([
     getAvailableBalance(),
@@ -139,6 +144,19 @@ const getTrendExtrema = async () => {
   return { highestPrice, lowestPrice };
 };
 
+const getPrice24hrAgo = async (symbol) => {
+  const totalParams = {
+    symbol,
+    interval: "1m",
+    startTime: Date.now() - 24 * 60 * 60 * 1000,
+    limit: 1
+  };
+  const response = await binanceFuturesAPI.get("/fapi/v1/markPriceKlines", {
+    params: totalParams
+  });
+  return { symbol, price24hrAgo: response.data[0][1] };
+};
+
 const getFibonacciLevels = async () => {
   const { highestPrice, lowestPrice } = await getTrendExtrema();
   const priceDifference = highestPrice - lowestPrice;
@@ -170,11 +188,43 @@ const getOrderQuantity = async () => {
   return orderQuantity;
 };
 
+const getAllPriceChangeRatio = async () => {
+  const allMarkPrice = await getAllMarkPrice();
+  const promiseAllArray = allMarkPrice.map((item) =>
+    getPrice24hrAgo(item.symbol)
+  );
+  const findMarkPrice = (symbol) =>
+    allMarkPrice.find((element) => element.symbol === symbol).markPrice;
+  const allPrice24hrAgo = await Promise.all(promiseAllArray);
+  const allPriceChangeRatio = allPrice24hrAgo
+    .filter((item) => findMarkPrice(item.symbol) > item.price24hrAgo)
+    .map((item) => ({
+      symbol: item.symbol,
+      priceChangeRatio:
+        (findMarkPrice(item.symbol) - item.price24hrAgo) / item.price24hrAgo
+    }));
+  return allPriceChangeRatio;
+};
+
+const getHighestGainsSymbol = async () => {
+  const allPriceChangeRatio = await getAllPriceChangeRatio();
+  if (allPriceChangeRatio.length === 0) {
+    return "NONE";
+  }
+  const ratios = allPriceChangeRatio.map((item) => item.priceChangeRatio);
+  const maxRatio = Math.max(...ratios);
+  const foundIndex = allPriceChangeRatio.findIndex(
+    (item) => item.priceChangeRatio === maxRatio
+  );
+  return allPriceChangeRatio[foundIndex].symbol;
+};
+
 export {
   getSignature,
   getPrecisions,
   getAvailableBalance,
   getMarkPrice,
+  getAllMarkPrice,
   getAvailableQuantity,
   getAllowableQuantity,
   getInvestableQuantity,
@@ -183,8 +233,11 @@ export {
   getHasLimitOrder,
   getAllowNewOrders,
   getTrendExtrema,
+  getPrice24hrAgo,
   getFibonacciLevels,
   getTPSL,
   roundToDecimalPlace,
-  getOrderQuantity
+  getOrderQuantity,
+  getAllPriceChangeRatio,
+  getHighestGainsSymbol
 };

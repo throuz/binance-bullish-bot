@@ -7,7 +7,8 @@ import {
   roundToDecimalPlace,
   getAllowNewOrders,
   getOrderQuantity,
-  getPrecisions
+  getPrecisions,
+  getHighestGainsSymbol
 } from "./src/helpers.js";
 import { placeMultipleOrders } from "./src/trade.js";
 
@@ -16,6 +17,8 @@ const executeTradingStrategy = async () => {
     const allowNewOrders = await getAllowNewOrders();
     logWithTime(`allowNewOrders: ${allowNewOrders}`);
     if (allowNewOrders) {
+      // const highestGainsSymbol = await getHighestGainsSymbol();
+      // console.log(highestGainsSymbol);
       const markPrice = await getMarkPrice();
       const fibonacciLevels = await getFibonacciLevels();
       const isPriceInSafeZone = markPrice > fibonacciLevels[1];
