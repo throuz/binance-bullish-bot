@@ -1,9 +1,10 @@
-import tradeConfig from "../configs/trade-config.js";
 import { binanceFuturesAPI } from "./web-services.js";
 import { sendLineNotify, errorHandler } from "./common.js";
-import { getSignature, getPositionInformation } from "./helpers.js";
-
-const { SYMBOL } = tradeConfig;
+import {
+  getSignature,
+  getAllPositionInformation,
+  getSymbol
+} from "./helpers.js";
 
 const newOrder = async (totalParams) => {
   const signature = getSignature(totalParams);
@@ -12,13 +13,14 @@ const newOrder = async (totalParams) => {
     signature
   });
   await sendLineNotify(
-    `New order! ${totalParams.type} ${totalParams.quantity} ${totalParams.price}`
+    `New order! ${totalParams.symbol} ${totalParams.type} ${totalParams.quantity} ${totalParams.price}`
   );
 };
 
 const cancelAllOpenOrders = async () => {
+  const symbol = getSymbol();
   const totalParams = {
-    symbol: SYMBOL,
+    symbol: symbol,
     timestamp: Date.now()
   };
   const signature = getSignature(totalParams);
@@ -29,11 +31,15 @@ const cancelAllOpenOrders = async () => {
 };
 
 const closePosition = async () => {
-  const positionInformation = await getPositionInformation();
+  const symbol = getSymbol();
+  const allPositionInformation = await getAllPositionInformation();
+  const positionInformation = allPositionInformation.find(
+    (info) => info.symbol === symbol
+  );
   const { positionAmt } = positionInformation;
   if (positionAmt > 0) {
     await newOrder({
-      symbol: SYMBOL,
+      symbol: symbol,
       side: "SELL",
       type: "MARKET",
       quantity: positionAmt,
@@ -50,8 +56,9 @@ const placeMultipleOrders = async (
   stopLossPrice
 ) => {
   try {
+    const symbol = getSymbol();
     await newOrder({
-      symbol: SYMBOL,
+      symbol: symbol,
       side: "BUY",
       type: "LIMIT",
       timeInForce: "GTC",
@@ -60,7 +67,7 @@ const placeMultipleOrders = async (
       timestamp: Date.now()
     });
     await newOrder({
-      symbol: SYMBOL,
+      symbol: symbol,
       side: "SELL",
       type: "TAKE_PROFIT",
       timeInForce: "GTE_GTC",
@@ -70,7 +77,7 @@ const placeMultipleOrders = async (
       timestamp: Date.now()
     });
     await newOrder({
-      symbol: SYMBOL,
+      symbol: symbol,
       side: "SELL",
       type: "STOP",
       timeInForce: "GTE_GTC",

@@ -11,32 +11,36 @@ import {
   getHighestGainsSymbol
 } from "./src/helpers.js";
 import { placeMultipleOrders } from "./src/trade.js";
+import { asyncLocalStorage } from "./src/storage.js";
 
 const executeTradingStrategy = async () => {
   try {
     const allowNewOrders = await getAllowNewOrders();
     logWithTime(`allowNewOrders: ${allowNewOrders}`);
     if (allowNewOrders) {
-      // const highestGainsSymbol = await getHighestGainsSymbol();
-      // console.log(highestGainsSymbol);
-      const markPrice = await getMarkPrice();
-      const fibonacciLevels = await getFibonacciLevels();
-      const isPriceInSafeZone = markPrice > fibonacciLevels[1];
-      logWithTime(`isPriceInSafeZone: ${isPriceInSafeZone}`);
-      if (isPriceInSafeZone) {
-        const orderQuantity = await getOrderQuantity();
-        const { takeProfitPrice, stopLossPrice } = getTPSL(
-          markPrice,
-          fibonacciLevels
-        );
-        const precisions = await getPrecisions();
-        const { quantityPrecision, pricePrecision } = precisions;
-        await placeMultipleOrders(
-          roundToDecimalPlace(orderQuantity, quantityPrecision),
-          roundToDecimalPlace(markPrice, pricePrecision),
-          roundToDecimalPlace(takeProfitPrice, pricePrecision),
-          roundToDecimalPlace(stopLossPrice, pricePrecision)
-        );
+      const highestGainsSymbol = await getHighestGainsSymbol();
+      if (highestGainsSymbol !== "NONE") {
+        asyncLocalStorage.run({ symbol: highestGainsSymbol }, async () => {
+          const markPrice = await getMarkPrice();
+          const fibonacciLevels = await getFibonacciLevels();
+          const isPriceInSafeZone = markPrice > fibonacciLevels[1];
+          logWithTime(`isPriceInSafeZone: ${isPriceInSafeZone}`);
+          if (isPriceInSafeZone) {
+            const orderQuantity = await getOrderQuantity();
+            const { takeProfitPrice, stopLossPrice } = getTPSL(
+              markPrice,
+              fibonacciLevels
+            );
+            const precisions = await getPrecisions();
+            const { quantityPrecision, pricePrecision } = precisions;
+            await placeMultipleOrders(
+              roundToDecimalPlace(orderQuantity, quantityPrecision),
+              roundToDecimalPlace(markPrice, pricePrecision),
+              roundToDecimalPlace(takeProfitPrice, pricePrecision),
+              roundToDecimalPlace(stopLossPrice, pricePrecision)
+            );
+          }
+        });
       }
     }
   } catch (error) {
