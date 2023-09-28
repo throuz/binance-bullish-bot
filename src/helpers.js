@@ -88,13 +88,18 @@ const getInvestableQuantity = async () => {
   return Math.min(availableQuantity, allowableQuantity);
 };
 
-const getHasPosition = async () => {
+const getPositionInformation = async () => {
   const totalParams = { symbol: SYMBOL, timestamp: Date.now() };
   const signature = getSignature(totalParams);
   const response = await binanceFuturesAPI.get("/fapi/v2/positionRisk", {
     params: { ...totalParams, signature }
   });
-  return response.data[0].positionAmt > 0;
+  return response.data[0];
+};
+
+const getHasPosition = async () => {
+  const positionInformation = await getPositionInformation();
+  return positionInformation.positionAmt > 0;
 };
 
 const getHasLimitOrder = async () => {
@@ -173,6 +178,7 @@ export {
   getAvailableQuantity,
   getAllowableQuantity,
   getInvestableQuantity,
+  getPositionInformation,
   getHasPosition,
   getHasLimitOrder,
   getAllowNewOrders,

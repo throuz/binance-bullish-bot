@@ -1,6 +1,6 @@
 export default {
   QUOTE_ASSET: "USDT",
-  SYMBOL: "WLDUSDT",
+  SYMBOL: "BTCUSDT",
   LEVERAGE: 10,
   INTERVAL: "1m",
   KLINE_LIMIT: 180,
