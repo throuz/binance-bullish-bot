@@ -1,10 +1,24 @@
 import { binanceFuturesAPI } from "./web-services.js";
 import { sendLineNotify, errorHandler } from "./common.js";
-import {
-  getSignature,
-  getAllPositionInformation,
-  getSymbol
-} from "./helpers.js";
+import { getSignature, getPositionInformation, getSymbol } from "./helpers.js";
+import tradeConfig from "../configs/trade-config.js";
+
+const { LEVERAGE } = tradeConfig;
+
+const changeInitialLeverage = async () => {
+  const symbol = getSymbol();
+  const totalParams = {
+    symbol: symbol,
+    leverage: LEVERAGE,
+    timestamp: Date.now()
+  };
+  const signature = getSignature(totalParams);
+  await binanceFuturesAPI.post("/fapi/v1/leverage", {
+    ...totalParams,
+    signature
+  });
+  await sendLineNotify("Change Initial Leverage!");
+};
 
 const newOrder = async (totalParams) => {
   const signature = getSignature(totalParams);
@@ -31,11 +45,7 @@ const cancelAllOpenOrders = async () => {
 };
 
 const closePosition = async () => {
-  const symbol = getSymbol();
-  const allPositionInformation = await getAllPositionInformation();
-  const positionInformation = allPositionInformation.find(
-    (info) => info.symbol === symbol
-  );
+  const positionInformation = await getPositionInformation();
   const { positionAmt } = positionInformation;
   if (positionAmt > 0) {
     await newOrder({
@@ -94,4 +104,10 @@ const placeMultipleOrders = async (
   }
 };
 
-export { newOrder, placeMultipleOrders };
+export {
+  changeInitialLeverage,
+  newOrder,
+  cancelAllOpenOrders,
+  closePosition,
+  placeMultipleOrders
+};
