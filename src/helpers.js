@@ -67,7 +67,7 @@ const getMarkPrice = async () => {
 
 const getAllMarkPrice = async () => {
   const response = await binanceFuturesAPI.get("/fapi/v1/premiumIndex");
-  return response.data;
+  return response.data.filter((item) => item.symbol.includes(QUOTE_ASSET));
 };
 
 const getAvailableQuantity = async () => {
