@@ -61,7 +61,6 @@ const closePosition = async () => {
 
 const placeMultipleOrders = async (
   quantity,
-  price,
   takeProfitPrice,
   stopLossPrice
 ) => {
@@ -70,10 +69,8 @@ const placeMultipleOrders = async (
     await newOrder({
       symbol: symbol,
       side: "BUY",
-      type: "LIMIT",
-      timeInForce: "GTC",
+      type: "MARKET",
       quantity,
-      price,
       timestamp: Date.now()
     });
     await newOrder({

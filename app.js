@@ -43,7 +43,6 @@ const executeTradingStrategy = async () => {
             const { quantityPrecision, pricePrecision } = precisions;
             await placeMultipleOrders(
               roundToDecimalPlace(orderQuantity, quantityPrecision),
-              roundToDecimalPlace(markPrice, pricePrecision),
               roundToDecimalPlace(takeProfitPrice, pricePrecision),
               roundToDecimalPlace(stopLossPrice, pricePrecision)
             );
