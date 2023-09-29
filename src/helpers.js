@@ -3,7 +3,7 @@ import querystring from "node:querystring";
 import envConfig from "../configs/env-config.js";
 import tradeConfig from "../configs/trade-config.js";
 import { binanceFuturesAPI } from "./web-services.js";
-import { asyncLocalStorage } from "./storage.js";
+import { getSymbol } from "./storage.js";
 
 const { SECRET_KEY } = envConfig;
 const {
@@ -14,11 +14,6 @@ const {
   FIBONACCI_RATIOS,
   ORDER_AMOUNT_PERCENTAGE
 } = tradeConfig;
-
-const getSymbol = () => {
-  const store = asyncLocalStorage.getStore();
-  return store.symbol;
-};
 
 const getSignature = (totalParams) => {
   const queryString = querystring.stringify(totalParams);
@@ -58,7 +53,7 @@ const getAvailableBalance = async () => {
 
 const getMarkPrice = async () => {
   const symbol = getSymbol();
-  const totalParams = { symbol: symbol };
+  const totalParams = { symbol };
   const response = await binanceFuturesAPI.get("/fapi/v1/premiumIndex", {
     params: totalParams
   });
@@ -81,7 +76,7 @@ const getAvailableQuantity = async () => {
 
 const getAllowableQuantity = async () => {
   const symbol = getSymbol();
-  const totalParams = { symbol: symbol, timestamp: Date.now() };
+  const totalParams = { symbol, timestamp: Date.now() };
   const signature = getSignature(totalParams);
   const response = await binanceFuturesAPI.get("/fapi/v2/positionRisk", {
     params: { ...totalParams, signature }
@@ -140,7 +135,7 @@ const getAllowNewOrders = async () => {
 const getTrendExtrema = async () => {
   const symbol = getSymbol();
   const totalParams = {
-    symbol: symbol,
+    symbol,
     interval: INTERVAL,
     limit: KLINE_LIMIT
   };

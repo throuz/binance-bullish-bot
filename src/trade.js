@@ -1,6 +1,7 @@
 import { binanceFuturesAPI } from "./web-services.js";
 import { sendLineNotify, errorHandler } from "./common.js";
-import { getSignature, getPositionInformation, getSymbol } from "./helpers.js";
+import { getSignature, getPositionInformation } from "./helpers.js";
+import { getSymbol } from "./storage.js";
 import tradeConfig from "../configs/trade-config.js";
 
 const { LEVERAGE } = tradeConfig;
@@ -8,7 +9,7 @@ const { LEVERAGE } = tradeConfig;
 const changeInitialLeverage = async () => {
   const symbol = getSymbol();
   const totalParams = {
-    symbol: symbol,
+    symbol,
     leverage: LEVERAGE,
     timestamp: Date.now()
   };
@@ -34,7 +35,7 @@ const newOrder = async (totalParams) => {
 const cancelAllOpenOrders = async () => {
   const symbol = getSymbol();
   const totalParams = {
-    symbol: symbol,
+    symbol,
     timestamp: Date.now()
   };
   const signature = getSignature(totalParams);
@@ -49,7 +50,7 @@ const closePosition = async () => {
   const { positionAmt } = positionInformation;
   if (positionAmt > 0) {
     await newOrder({
-      symbol: symbol,
+      symbol,
       side: "SELL",
       type: "MARKET",
       quantity: positionAmt,
@@ -67,14 +68,14 @@ const placeMultipleOrders = async (
   try {
     const symbol = getSymbol();
     await newOrder({
-      symbol: symbol,
+      symbol,
       side: "BUY",
       type: "MARKET",
       quantity,
       timestamp: Date.now()
     });
     await newOrder({
-      symbol: symbol,
+      symbol,
       side: "SELL",
       type: "TAKE_PROFIT",
       timeInForce: "GTE_GTC",
@@ -84,7 +85,7 @@ const placeMultipleOrders = async (
       timestamp: Date.now()
     });
     await newOrder({
-      symbol: symbol,
+      symbol,
       side: "SELL",
       type: "STOP",
       timeInForce: "GTE_GTC",
