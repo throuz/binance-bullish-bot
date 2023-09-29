@@ -29,19 +29,19 @@ const getSignature = (totalParams) => {
   return signature;
 };
 
-const getPrecisions = async () => {
+const getSizes = async () => {
   const symbol = getSymbol();
   const response = await binanceFuturesAPI.get("/fapi/v1/exchangeInfo");
   const symbolData = response.data.symbols.find(
     (item) => item.symbol === symbol
   );
-  const { quantityPrecision } = symbolData;
-  const priceFilterData = symbolData.filters.find(
+  const tickSize = symbolData.filters.find(
     (filter) => filter.filterType === "PRICE_FILTER"
-  );
-  const tickSizeString = String(Number(priceFilterData.tickSize));
-  const pricePrecision = tickSizeString.split(".")[1].length;
-  return { quantityPrecision, pricePrecision };
+  ).tickSize;
+  const stepSize = symbolData.filters.find(
+    (filter) => filter.filterType === "LOT_SIZE"
+  ).stepSize;
+  return { tickSize, stepSize };
 };
 
 const getAvailableBalance = async () => {
@@ -130,22 +130,9 @@ const getHasPosition = async () => {
   return false;
 };
 
-const getHasLimitOrder = async () => {
-  const totalParams = { timestamp: Date.now() };
-  const signature = getSignature(totalParams);
-  const response = await binanceFuturesAPI.get("/fapi/v1/openOrders", {
-    params: { ...totalParams, signature }
-  });
-  return response.data.some((order) => order.type === "LIMIT");
-};
-
 const getAllowNewOrders = async () => {
   const hasPosition = await getHasPosition();
   if (hasPosition) {
-    return false;
-  }
-  const hasLimitOrder = await getHasLimitOrder();
-  if (hasLimitOrder) {
     return false;
   }
   return true;
@@ -201,9 +188,8 @@ const getTPSL = (price, levels) => {
   return { takeProfitPrice, stopLossPrice };
 };
 
-const roundToDecimalPlace = (number, decimalPlaces) => {
-  const multiplier = Math.pow(10, decimalPlaces);
-  return Math.round(number * multiplier) / multiplier;
+const formatBySize = (number, size) => {
+  return Math.floor(number / size) * size;
 };
 
 const getOrderQuantity = async () => {
@@ -246,7 +232,7 @@ const getHighestGainsSymbol = async () => {
 export {
   getSymbol,
   getSignature,
-  getPrecisions,
+  getSizes,
   getAvailableBalance,
   getMarkPrice,
   getAllMarkPrice,
@@ -256,13 +242,12 @@ export {
   getPositionInformation,
   getAllPositionInformation,
   getHasPosition,
-  getHasLimitOrder,
   getAllowNewOrders,
   getTrendExtrema,
   getPrice24hrAgo,
   getFibonacciLevels,
   getTPSL,
-  roundToDecimalPlace,
+  formatBySize,
   getOrderQuantity,
   getAllPriceChangeRatio,
   getHighestGainsSymbol

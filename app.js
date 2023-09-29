@@ -4,10 +4,10 @@ import {
   getFibonacciLevels,
   getMarkPrice,
   getTPSL,
-  roundToDecimalPlace,
+  formatBySize,
   getAllowNewOrders,
   getOrderQuantity,
-  getPrecisions,
+  getSizes,
   getHighestGainsSymbol,
   getPositionInformation
 } from "./src/helpers.js";
@@ -33,12 +33,11 @@ const executePlaceOrders = async () => {
         markPrice,
         fibonacciLevels
       );
-      const precisions = await getPrecisions();
-      const { quantityPrecision, pricePrecision } = precisions;
+      const { tickSize, stepSize } = await getSizes();
       await placeMultipleOrders(
-        roundToDecimalPlace(orderQuantity, quantityPrecision),
-        roundToDecimalPlace(takeProfitPrice, pricePrecision),
-        roundToDecimalPlace(stopLossPrice, pricePrecision)
+        formatBySize(orderQuantity, stepSize),
+        formatBySize(takeProfitPrice, tickSize),
+        formatBySize(stopLossPrice, tickSize)
       );
     }
   } catch (error) {
