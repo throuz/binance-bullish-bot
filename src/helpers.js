@@ -4,7 +4,6 @@ import envConfig from "../configs/env-config.js";
 import tradeConfig from "../configs/trade-config.js";
 import { binanceFuturesAPI } from "./web-services.js";
 import { getSymbol } from "./storage.js";
-import { floor, divide, multiply } from "mathjs";
 
 const { SECRET_KEY } = envConfig;
 const {
@@ -220,8 +219,18 @@ const getHighestGainsSymbol = async () => {
   return allPriceChangeRatio[foundIndex].symbol;
 };
 
+const getPrecision = (numberString) => {
+  const decimalIndex = numberString.indexOf(".");
+  if (decimalIndex === -1) {
+    return 0;
+  } else {
+    return numberString.length - decimalIndex - 1;
+  }
+};
+
 const formatBySize = (number, size) => {
-  return multiply(floor(divide(number, size)), size);
+  const precision = getPrecision(size);
+  return Number(number.toFixed(precision));
 };
 
 export {
@@ -245,5 +254,6 @@ export {
   getOrderQuantity,
   getAllPriceChangeRatio,
   getHighestGainsSymbol,
+  getPrecision,
   formatBySize
 };
