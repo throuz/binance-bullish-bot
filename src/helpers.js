@@ -4,6 +4,7 @@ import envConfig from "../configs/env-config.js";
 import tradeConfig from "../configs/trade-config.js";
 import { binanceFuturesAPI } from "./web-services.js";
 import { getSymbol } from "./storage.js";
+import { floor, divide, multiply } from "mathjs";
 
 const { SECRET_KEY } = envConfig;
 const {
@@ -182,10 +183,6 @@ const getTPSL = (price, levels) => {
   return { takeProfitPrice, stopLossPrice };
 };
 
-const formatBySize = (number, size) => {
-  return Math.floor(number / size) * size;
-};
-
 const getOrderQuantity = async () => {
   const investableQuantity = await getInvestableQuantity();
   const orderQuantity = investableQuantity * (ORDER_AMOUNT_PERCENTAGE / 100);
@@ -223,6 +220,10 @@ const getHighestGainsSymbol = async () => {
   return allPriceChangeRatio[foundIndex].symbol;
 };
 
+const formatBySize = (number, size) => {
+  return multiply(floor(divide(number, size)) * size);
+};
+
 export {
   getSymbol,
   getSignature,
@@ -241,8 +242,8 @@ export {
   getPrice24hrAgo,
   getFibonacciLevels,
   getTPSL,
-  formatBySize,
   getOrderQuantity,
   getAllPriceChangeRatio,
-  getHighestGainsSymbol
+  getHighestGainsSymbol,
+  formatBySize
 };
