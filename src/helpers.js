@@ -221,7 +221,7 @@ const getHighestGainsSymbol = async () => {
 };
 
 const formatBySize = (number, size) => {
-  return multiply(floor(divide(number, size)) * size);
+  return multiply(floor(divide(number, size)), size);
 };
 
 export {
