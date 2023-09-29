@@ -46,6 +46,7 @@ const cancelAllOpenOrders = async () => {
 };
 
 const closePosition = async () => {
+  const symbol = getSymbol();
   const positionInformation = await getPositionInformation();
   const { positionAmt } = positionInformation;
   if (positionAmt > 0) {
