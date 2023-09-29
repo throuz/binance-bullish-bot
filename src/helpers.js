@@ -76,7 +76,7 @@ const getAvailableQuantity = async () => {
     getMarkPrice()
   ]);
   const availableFunds = availableBalance * LEVERAGE;
-  return Math.trunc((availableFunds / markPrice) * 1000) / 1000;
+  return availableFunds / markPrice;
 };
 
 const getAllowableQuantity = async () => {
@@ -88,9 +88,8 @@ const getAllowableQuantity = async () => {
   });
   const { maxNotionalValue, positionAmt } = response.data[0];
   const markPrice = await getMarkPrice();
-  const maxAllowableQuantity =
-    Math.trunc((maxNotionalValue / markPrice) * 1000) / 1000;
-  return maxAllowableQuantity - Math.abs(positionAmt);
+  const maxAllowableQuantity = maxNotionalValue / markPrice;
+  return maxAllowableQuantity - positionAmt;
 };
 
 const getInvestableQuantity = async () => {
