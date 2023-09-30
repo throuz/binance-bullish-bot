@@ -23,13 +23,12 @@ const changeInitialLeverage = async () => {
 
 const newOrder = async (totalParams) => {
   const signature = getSignature(totalParams);
-  await binanceFuturesAPI.post("/fapi/v1/order", {
+  const response = await binanceFuturesAPI.post("/fapi/v1/order", {
     ...totalParams,
     signature
   });
-  await sendLineNotify(
-    `New order! ${totalParams.symbol} ${totalParams.type} ${totalParams.quantity} ${totalParams.price}`
-  );
+  const { symbol, type, origQty, price } = response.data;
+  await sendLineNotify(`New order! ${symbol} ${type} ${origQty} ${price}`);
 };
 
 const cancelAllOpenOrders = async () => {
