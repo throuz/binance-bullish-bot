@@ -15,7 +15,7 @@ import { changeInitialLeverage, placeMultipleOrders } from "./src/trade.js";
 import { asyncLocalStorage } from "./src/storage.js";
 import tradeConfig from "./configs/trade-config.js";
 
-const { LEVERAGE } = tradeConfig;
+const { LEVERAGE, SAFE_ZONE_INDEX } = tradeConfig;
 
 const executePlaceOrders = async () => {
   try {
@@ -27,7 +27,7 @@ const executePlaceOrders = async () => {
       getMarkPrice(),
       getFibonacciLevels()
     ]);
-    const isPriceInSafeZone = markPrice > fibonacciLevels[1];
+    const isPriceInSafeZone = markPrice > fibonacciLevels[SAFE_ZONE_INDEX];
     logWithTime(`isPriceInSafeZone: ${isPriceInSafeZone}`);
     if (isPriceInSafeZone) {
       const [orderQuantity, sizes] = await Promise.all([

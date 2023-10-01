@@ -12,6 +12,8 @@ const {
   INTERVAL,
   KLINE_LIMIT,
   FIBONACCI_RATIOS,
+  TAKE_PROFIT_INDEX,
+  STOP_LOSS_INDEX,
   ORDER_AMOUNT_PERCENTAGE
 } = tradeConfig;
 
@@ -174,8 +176,8 @@ const getTPSL = (price, levels) => {
   const targetIndex = differenceArray.findIndex(
     (diff) => diff === minDifference
   );
-  const takeProfitPrice = levels[targetIndex + 2];
-  const stopLossPrice = levels[targetIndex - 1];
+  const takeProfitPrice = levels[targetIndex + TAKE_PROFIT_INDEX];
+  const stopLossPrice = levels[targetIndex + STOP_LOSS_INDEX];
   return { takeProfitPrice, stopLossPrice };
 };
 
