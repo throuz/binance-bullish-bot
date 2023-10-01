@@ -23,17 +23,22 @@ const executePlaceOrders = async () => {
     if (Number(positionInformation.leverage) !== LEVERAGE) {
       await changeInitialLeverage();
     }
-    const markPrice = await getMarkPrice();
-    const fibonacciLevels = await getFibonacciLevels();
+    const [markPrice, fibonacciLevels] = await Promise.all([
+      getMarkPrice(),
+      getFibonacciLevels()
+    ]);
     const isPriceInSafeZone = markPrice > fibonacciLevels[1];
     logWithTime(`isPriceInSafeZone: ${isPriceInSafeZone}`);
     if (isPriceInSafeZone) {
-      const orderQuantity = await getOrderQuantity();
+      const [orderQuantity, sizes] = await Promise.all([
+        getOrderQuantity(),
+        getSizes()
+      ]);
+      const { tickSize, stepSize } = sizes;
       const { takeProfitPrice, stopLossPrice } = getTPSL(
         markPrice,
         fibonacciLevels
       );
-      const { tickSize, stepSize } = await getSizes();
       await placeMultipleOrders(
         formatBySize(orderQuantity, stepSize),
         formatBySize(takeProfitPrice, tickSize),

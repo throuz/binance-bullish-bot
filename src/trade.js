@@ -67,33 +67,35 @@ const placeMultipleOrders = async (
 ) => {
   try {
     const symbol = getSymbol();
-    await newOrder({
-      symbol,
-      side: "BUY",
-      type: "MARKET",
-      quantity,
-      timestamp: Date.now()
-    });
-    await newOrder({
-      symbol,
-      side: "SELL",
-      type: "TAKE_PROFIT",
-      timeInForce: "GTE_GTC",
-      quantity,
-      price: takeProfitPrice,
-      stopPrice: takeProfitPrice,
-      timestamp: Date.now()
-    });
-    await newOrder({
-      symbol,
-      side: "SELL",
-      type: "STOP",
-      timeInForce: "GTE_GTC",
-      quantity,
-      price: stopLossPrice,
-      stopPrice: stopLossPrice,
-      timestamp: Date.now()
-    });
+    await Promise.all([
+      newOrder({
+        symbol,
+        side: "BUY",
+        type: "MARKET",
+        quantity,
+        timestamp: Date.now()
+      }),
+      newOrder({
+        symbol,
+        side: "SELL",
+        type: "TAKE_PROFIT",
+        timeInForce: "GTE_GTC",
+        quantity,
+        price: takeProfitPrice,
+        stopPrice: takeProfitPrice,
+        timestamp: Date.now()
+      }),
+      newOrder({
+        symbol,
+        side: "SELL",
+        type: "STOP",
+        timeInForce: "GTE_GTC",
+        quantity,
+        price: stopLossPrice,
+        stopPrice: stopLossPrice,
+        timestamp: Date.now()
+      })
+    ]);
   } catch (error) {
     await sendLineNotify("Error occurred during place multiple orders");
     await errorHandler(error);

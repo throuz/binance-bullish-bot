@@ -74,15 +74,22 @@ const getAvailableQuantity = async () => {
   return availableFunds / markPrice;
 };
 
-const getAllowableQuantity = async () => {
+const getPositionInformation = async () => {
   const symbol = getSymbol();
   const totalParams = { symbol, timestamp: Date.now() };
   const signature = getSignature(totalParams);
   const response = await binanceFuturesAPI.get("/fapi/v2/positionRisk", {
     params: { ...totalParams, signature }
   });
-  const { maxNotionalValue, positionAmt } = response.data[0];
-  const markPrice = await getMarkPrice();
+  return response.data[0];
+};
+
+const getAllowableQuantity = async () => {
+  const [positionInformation, markPrice] = await Promise.all([
+    getPositionInformation(),
+    getMarkPrice()
+  ]);
+  const { maxNotionalValue, positionAmt } = positionInformation;
   const maxAllowableQuantity = maxNotionalValue / markPrice;
   return maxAllowableQuantity - positionAmt;
 };
@@ -93,16 +100,6 @@ const getInvestableQuantity = async () => {
     getAllowableQuantity()
   ]);
   return Math.min(availableQuantity, allowableQuantity);
-};
-
-const getPositionInformation = async () => {
-  const symbol = getSymbol();
-  const totalParams = { symbol, timestamp: Date.now() };
-  const signature = getSignature(totalParams);
-  const response = await binanceFuturesAPI.get("/fapi/v2/positionRisk", {
-    params: { ...totalParams, signature }
-  });
-  return response.data[0];
 };
 
 const getAllPositionInformation = async () => {
