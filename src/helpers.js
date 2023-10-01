@@ -216,17 +216,17 @@ const getHighestGainsSymbol = async () => {
   return allPriceChangeRatio[foundIndex].symbol;
 };
 
-const getPrecision = (numberString) => {
-  const decimalIndex = numberString.indexOf(".");
-  if (decimalIndex === -1) {
+const getPrecisionBySize = (size) => {
+  const formatedSize = String(Number(size));
+  if (formatedSize === "1") {
     return 0;
   } else {
-    return numberString.length - decimalIndex - 1;
+    return formatedSize.length - 2;
   }
 };
 
 const formatBySize = (number, size) => {
-  const precision = getPrecision(size);
+  const precision = getPrecisionBySize(size);
   return Number(number.toFixed(precision));
 };
 
@@ -251,6 +251,6 @@ export {
   getOrderQuantity,
   getAllPriceChangeRatio,
   getHighestGainsSymbol,
-  getPrecision,
+  getPrecisionBySize,
   formatBySize
 };
