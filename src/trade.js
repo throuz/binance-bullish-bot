@@ -67,14 +67,14 @@ const placeMultipleOrders = async (
 ) => {
   try {
     const symbol = getSymbol();
+    await newOrder({
+      symbol,
+      side: "BUY",
+      type: "MARKET",
+      quantity,
+      timestamp: Date.now()
+    });
     await Promise.all([
-      newOrder({
-        symbol,
-        side: "BUY",
-        type: "MARKET",
-        quantity,
-        timestamp: Date.now()
-      }),
       newOrder({
         symbol,
         side: "SELL",
