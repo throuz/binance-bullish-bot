@@ -187,7 +187,7 @@ const getOrderQuantity = async () => {
   return orderQuantity;
 };
 
-const getAllPriceChangeRatio = async () => {
+const getAllPriceChangeRatio = async (filter) => {
   const allMarkPrice = await getAllMarkPrice();
   const promiseAllArray = allMarkPrice.map((item) =>
     getPrice24hrAgo(item.symbol)
@@ -195,18 +195,25 @@ const getAllPriceChangeRatio = async () => {
   const findMarkPrice = (symbol) =>
     allMarkPrice.find((element) => element.symbol === symbol).markPrice;
   const allPrice24hrAgo = await Promise.all(promiseAllArray);
-  const allPriceChangeRatio = allPrice24hrAgo
-    .filter((item) => findMarkPrice(item.symbol) > item.price24hrAgo)
-    .map((item) => ({
-      symbol: item.symbol,
-      priceChangeRatio:
-        (findMarkPrice(item.symbol) - item.price24hrAgo) / item.price24hrAgo
-    }));
+  const filteredAllPrice24hrAgo = allPrice24hrAgo.filter((item) => {
+    if (filter === "GAIN") {
+      return findMarkPrice(item.symbol) > item.price24hrAgo;
+    }
+    if (filter === "LOSS") {
+      return findMarkPrice(item.symbol) < item.price24hrAgo;
+    }
+    return true;
+  });
+  const allPriceChangeRatio = filteredAllPrice24hrAgo.map((item) => ({
+    symbol: item.symbol,
+    priceChangeRatio:
+      (findMarkPrice(item.symbol) - item.price24hrAgo) / item.price24hrAgo
+  }));
   return allPriceChangeRatio;
 };
 
-const getHighestGainsSymbol = async () => {
-  const allPriceChangeRatio = await getAllPriceChangeRatio();
+const getTopGainerSymbol = async () => {
+  const allPriceChangeRatio = await getAllPriceChangeRatio("GAIN");
   if (allPriceChangeRatio.length === 0) {
     return "NONE";
   }
@@ -214,6 +221,19 @@ const getHighestGainsSymbol = async () => {
   const maxRatio = Math.max(...ratios);
   const foundIndex = allPriceChangeRatio.findIndex(
     (item) => item.priceChangeRatio === maxRatio
+  );
+  return allPriceChangeRatio[foundIndex].symbol;
+};
+
+const getTopLoserSymbol = async () => {
+  const allPriceChangeRatio = await getAllPriceChangeRatio("LOSS");
+  if (allPriceChangeRatio.length === 0) {
+    return "NONE";
+  }
+  const ratios = allPriceChangeRatio.map((item) => item.priceChangeRatio);
+  const minRatio = Math.min(...ratios);
+  const foundIndex = allPriceChangeRatio.findIndex(
+    (item) => item.priceChangeRatio === minRatio
   );
   return allPriceChangeRatio[foundIndex].symbol;
 };
@@ -252,7 +272,8 @@ export {
   getTPSL,
   getOrderQuantity,
   getAllPriceChangeRatio,
-  getHighestGainsSymbol,
+  getTopGainerSymbol,
+  getTopLoserSymbol,
   getPrecisionBySize,
   formatBySize
 };
