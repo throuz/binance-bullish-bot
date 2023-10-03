@@ -1,50 +1,36 @@
-import { binanceFuturesAPI } from "./web-services.js";
 import { sendLineNotify, errorHandler } from "./common.js";
-import { getSignature, getPositionInformation } from "./helpers.js";
+import { getPositionInformation } from "./helpers.js";
+import {
+  changeInitialLeverageAPI,
+  newOrderAPI,
+  cancelAllOpenOrdersAPI
+} from "./api.js";
 import { getSymbol } from "./storage.js";
 import tradeConfig from "../configs/trade-config.js";
 
 const { LEVERAGE } = tradeConfig;
 
-const changeInitialLeverage = async () => {
+export const changeInitialLeverage = async () => {
   const symbol = getSymbol();
-  const totalParams = {
-    symbol,
-    leverage: LEVERAGE,
-    timestamp: Date.now()
-  };
-  const signature = getSignature(totalParams);
-  await binanceFuturesAPI.post("/fapi/v1/leverage", {
-    ...totalParams,
-    signature
-  });
+  const totalParams = { symbol, leverage: LEVERAGE, timestamp: Date.now() };
+  await changeInitialLeverageAPI(totalParams);
   await sendLineNotify("Change Initial Leverage!");
 };
 
-const newOrder = async (totalParams) => {
-  const signature = getSignature(totalParams);
-  const response = await binanceFuturesAPI.post("/fapi/v1/order", {
-    ...totalParams,
-    signature
-  });
+export const newOrder = async (totalParams) => {
+  const response = await newOrderAPI(totalParams);
   const { symbol, type, origQty, price } = response.data;
   await sendLineNotify(`New order! ${symbol} ${type} ${origQty} ${price}`);
 };
 
-const cancelAllOpenOrders = async () => {
+export const cancelAllOpenOrders = async () => {
   const symbol = getSymbol();
-  const totalParams = {
-    symbol,
-    timestamp: Date.now()
-  };
-  const signature = getSignature(totalParams);
-  await binanceFuturesAPI.delete("/fapi/v1/allOpenOrders", {
-    params: { ...totalParams, signature }
-  });
+  const totalParams = { symbol, timestamp: Date.now() };
+  await cancelAllOpenOrdersAPI(totalParams);
   await sendLineNotify("Cancel all open orders!");
 };
 
-const closePosition = async () => {
+export const closePosition = async () => {
   const symbol = getSymbol();
   const positionInformation = await getPositionInformation();
   const { positionAmt } = positionInformation;
@@ -60,7 +46,7 @@ const closePosition = async () => {
   }
 };
 
-const placeMultipleOrders = async (
+export const placeMultipleOrders = async (
   quantity,
   takeProfitPrice,
   stopLossPrice
@@ -102,12 +88,4 @@ const placeMultipleOrders = async (
     await cancelAllOpenOrders();
     await closePosition();
   }
-};
-
-export {
-  changeInitialLeverage,
-  newOrder,
-  cancelAllOpenOrders,
-  closePosition,
-  placeMultipleOrders
 };

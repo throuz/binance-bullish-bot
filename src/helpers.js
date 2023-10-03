@@ -1,11 +1,13 @@
-import crypto from "node:crypto";
-import querystring from "node:querystring";
-import envConfig from "../configs/env-config.js";
 import tradeConfig from "../configs/trade-config.js";
-import { binanceFuturesAPI } from "./web-services.js";
+import {
+  exchangeInformationAPI,
+  futuresAccountBalanceAPI,
+  markPriceAPI,
+  positionInformationAPI,
+  markPriceKlineDataAPI
+} from "./api.js";
 import { getSymbol } from "./storage.js";
 
-const { SECRET_KEY } = envConfig;
 const {
   QUOTE_ASSET,
   LEVERAGE,
@@ -17,19 +19,10 @@ const {
   ORDER_AMOUNT_PERCENTAGE
 } = tradeConfig;
 
-const getSignature = (totalParams) => {
-  const queryString = querystring.stringify(totalParams);
-  const signature = crypto
-    .createHmac("sha256", SECRET_KEY)
-    .update(queryString)
-    .digest("hex");
-  return signature;
-};
-
-const getSizes = async () => {
+export const getSizes = async () => {
+  const exchangeInformation = await exchangeInformationAPI();
   const symbol = getSymbol();
-  const response = await binanceFuturesAPI.get("/fapi/v1/exchangeInfo");
-  const symbolData = response.data.symbols.find(
+  const symbolData = exchangeInformation.symbols.find(
     (item) => item.symbol === symbol
   );
   const tickSize = symbolData.filters.find(
@@ -41,33 +34,28 @@ const getSizes = async () => {
   return { tickSize, stepSize };
 };
 
-const getAvailableBalance = async () => {
+export const getAvailableBalance = async () => {
   const totalParams = { timestamp: Date.now() };
-  const signature = getSignature(totalParams);
-  const response = await binanceFuturesAPI.get("/fapi/v2/balance", {
-    params: { ...totalParams, signature }
-  });
-  const availableBalance = response.data.find(
+  const futuresAccountBalance = await futuresAccountBalanceAPI(totalParams);
+  const availableBalance = futuresAccountBalance.find(
     ({ asset }) => asset === QUOTE_ASSET
   ).availableBalance;
   return availableBalance;
 };
 
-const getMarkPrice = async () => {
+export const getMarkPrice = async () => {
   const symbol = getSymbol();
   const totalParams = { symbol };
-  const response = await binanceFuturesAPI.get("/fapi/v1/premiumIndex", {
-    params: totalParams
-  });
-  return response.data.markPrice;
+  const markPrice = await markPriceAPI(totalParams);
+  return markPrice.markPrice;
 };
 
-const getAllMarkPrice = async () => {
-  const response = await binanceFuturesAPI.get("/fapi/v1/premiumIndex");
-  return response.data.filter((item) => item.symbol.includes(QUOTE_ASSET));
+export const getAllMarkPrice = async () => {
+  const markPrice = await markPriceAPI();
+  return markPrice.filter((item) => item.symbol.includes(QUOTE_ASSET));
 };
 
-const getAvailableQuantity = async () => {
+export const getAvailableQuantity = async () => {
   const [availableBalance, markPrice] = await Promise.all([
     getAvailableBalance(),
     getMarkPrice()
@@ -76,17 +64,14 @@ const getAvailableQuantity = async () => {
   return availableFunds / markPrice;
 };
 
-const getPositionInformation = async () => {
+export const getPositionInformation = async () => {
   const symbol = getSymbol();
   const totalParams = { symbol, timestamp: Date.now() };
-  const signature = getSignature(totalParams);
-  const response = await binanceFuturesAPI.get("/fapi/v2/positionRisk", {
-    params: { ...totalParams, signature }
-  });
-  return response.data[0];
+  const positionInformation = await positionInformationAPI(totalParams);
+  return positionInformation[0];
 };
 
-const getAllowableQuantity = async () => {
+export const getAllowableQuantity = async () => {
   const [positionInformation, markPrice] = await Promise.all([
     getPositionInformation(),
     getMarkPrice()
@@ -96,7 +81,7 @@ const getAllowableQuantity = async () => {
   return maxAllowableQuantity - positionAmt;
 };
 
-const getInvestableQuantity = async () => {
+export const getInvestableQuantity = async () => {
   const [availableQuantity, allowableQuantity] = await Promise.all([
     getAvailableQuantity(),
     getAllowableQuantity()
@@ -104,16 +89,13 @@ const getInvestableQuantity = async () => {
   return Math.min(availableQuantity, allowableQuantity);
 };
 
-const getAllPositionInformation = async () => {
+export const getAllPositionInformation = async () => {
   const totalParams = { timestamp: Date.now() };
-  const signature = getSignature(totalParams);
-  const response = await binanceFuturesAPI.get("/fapi/v2/positionRisk", {
-    params: { ...totalParams, signature }
-  });
-  return response.data;
+  const positionInformation = await positionInformationAPI(totalParams);
+  return positionInformation;
 };
 
-const getHasPosition = async () => {
+export const getHasPosition = async () => {
   const allPositionInformation = await getAllPositionInformation();
   for (const info of allPositionInformation) {
     if (info.positionAmt > 0) {
@@ -123,7 +105,7 @@ const getHasPosition = async () => {
   return false;
 };
 
-const getAllowNewOrders = async () => {
+export const getAllowNewOrders = async () => {
   const hasPosition = await getHasPosition();
   if (hasPosition) {
     return false;
@@ -131,37 +113,33 @@ const getAllowNewOrders = async () => {
   return true;
 };
 
-const getTrendExtrema = async () => {
+export const getTrendExtrema = async () => {
   const symbol = getSymbol();
   const totalParams = {
     symbol,
     interval: INTERVAL,
     limit: KLINE_LIMIT
   };
-  const response = await binanceFuturesAPI.get("/fapi/v1/markPriceKlines", {
-    params: totalParams
-  });
-  const highPriceArray = response.data.map((kline) => kline[2]);
+  const markPriceKlineData = await markPriceKlineDataAPI(totalParams);
+  const highPriceArray = markPriceKlineData.map((kline) => kline[2]);
   const highestPrice = Math.max(...highPriceArray);
-  const lowPriceArray = response.data.map((kline) => kline[3]);
+  const lowPriceArray = markPriceKlineData.map((kline) => kline[3]);
   const lowestPrice = Math.min(...lowPriceArray);
   return { highestPrice, lowestPrice };
 };
 
-const getPrice24hrAgo = async (symbol) => {
+export const getPrice24hrAgo = async (symbol) => {
   const totalParams = {
     symbol,
     interval: "1m",
     startTime: Date.now() - 24 * 60 * 60 * 1000,
     limit: 1
   };
-  const response = await binanceFuturesAPI.get("/fapi/v1/markPriceKlines", {
-    params: totalParams
-  });
-  return { symbol, price24hrAgo: response.data[0][1] };
+  const markPriceKlineData = await markPriceKlineDataAPI(totalParams);
+  return { symbol, price24hrAgo: markPriceKlineData[0][1] };
 };
 
-const getFibonacciLevels = async () => {
+export const getFibonacciLevels = async () => {
   const { highestPrice, lowestPrice } = await getTrendExtrema();
   const priceDifference = highestPrice - lowestPrice;
   const fibonacciLevels = FIBONACCI_RATIOS.map(
@@ -170,7 +148,7 @@ const getFibonacciLevels = async () => {
   return fibonacciLevels;
 };
 
-const getTPSL = (price, levels) => {
+export const getTPSL = (price, levels) => {
   const differenceArray = levels.map((level) => Math.abs(level - price));
   const minDifference = Math.min(...differenceArray);
   const targetIndex = differenceArray.findIndex(
@@ -181,13 +159,13 @@ const getTPSL = (price, levels) => {
   return { takeProfitPrice, stopLossPrice };
 };
 
-const getOrderQuantity = async () => {
+export const getOrderQuantity = async () => {
   const investableQuantity = await getInvestableQuantity();
   const orderQuantity = investableQuantity * (ORDER_AMOUNT_PERCENTAGE / 100);
   return orderQuantity;
 };
 
-const getAllPriceChangeRatio = async (filter) => {
+export const getAllPriceChangeRatio = async (filter) => {
   const allMarkPrice = await getAllMarkPrice();
   const promiseAllArray = allMarkPrice.map((item) =>
     getPrice24hrAgo(item.symbol)
@@ -212,7 +190,7 @@ const getAllPriceChangeRatio = async (filter) => {
   return allPriceChangeRatio;
 };
 
-const getTopGainerSymbol = async () => {
+export const getTopGainerSymbol = async () => {
   const allPriceChangeRatio = await getAllPriceChangeRatio("GAIN");
   if (allPriceChangeRatio.length === 0) {
     return "NONE";
@@ -225,7 +203,7 @@ const getTopGainerSymbol = async () => {
   return allPriceChangeRatio[foundIndex].symbol;
 };
 
-const getTopLoserSymbol = async () => {
+export const getTopLoserSymbol = async () => {
   const allPriceChangeRatio = await getAllPriceChangeRatio("LOSS");
   if (allPriceChangeRatio.length === 0) {
     return "NONE";
@@ -238,7 +216,7 @@ const getTopLoserSymbol = async () => {
   return allPriceChangeRatio[foundIndex].symbol;
 };
 
-const getPrecisionBySize = (size) => {
+export const getPrecisionBySize = (size) => {
   const formatedSize = String(Number(size));
   if (formatedSize === "1") {
     return 0;
@@ -247,33 +225,7 @@ const getPrecisionBySize = (size) => {
   }
 };
 
-const formatBySize = (number, size) => {
+export const formatBySize = (number, size) => {
   const precision = getPrecisionBySize(size);
   return Number(number.toFixed(precision));
-};
-
-export {
-  getSymbol,
-  getSignature,
-  getSizes,
-  getAvailableBalance,
-  getMarkPrice,
-  getAllMarkPrice,
-  getAvailableQuantity,
-  getAllowableQuantity,
-  getInvestableQuantity,
-  getPositionInformation,
-  getAllPositionInformation,
-  getHasPosition,
-  getAllowNewOrders,
-  getTrendExtrema,
-  getPrice24hrAgo,
-  getFibonacciLevels,
-  getTPSL,
-  getOrderQuantity,
-  getAllPriceChangeRatio,
-  getTopGainerSymbol,
-  getTopLoserSymbol,
-  getPrecisionBySize,
-  formatBySize
 };

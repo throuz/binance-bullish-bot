@@ -1,6 +1,6 @@
 import { lineNotifyAPI } from "./web-services.js";
 
-const sendLineNotify = async (msg, isLogWithTime = true) => {
+export const sendLineNotify = async (msg, isLogWithTime = true) => {
   await lineNotifyAPI.post("/api/notify", { message: msg });
   if (isLogWithTime) {
     logWithTime(msg);
@@ -9,11 +9,11 @@ const sendLineNotify = async (msg, isLogWithTime = true) => {
   }
 };
 
-const logWithTime = (msg) => {
+export const logWithTime = (msg) => {
   console.log(`${msg} [${new Date().toLocaleString()}]`);
 };
 
-const errorHandler = async (error) => {
+export const errorHandler = async (error) => {
   if (error.response) {
     await sendLineNotify("Response status code is outside the 2xx range");
     await sendLineNotify(
@@ -43,5 +43,3 @@ const errorHandler = async (error) => {
   }
   await sendLineNotify(`error.config: ${JSON.stringify(error.config)}`, false);
 };
-
-export { sendLineNotify, logWithTime, errorHandler };
