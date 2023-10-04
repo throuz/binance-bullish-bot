@@ -13,8 +13,6 @@ export const getSignature = (totalParams) => {
   return signature;
 };
 
-// GET
-
 export const getBinanceFuturesAPI = async (path, totalParams) => {
   const signature = getSignature(totalParams);
   const key = path + "/" + signature;
@@ -28,8 +26,10 @@ export const getBinanceFuturesAPI = async (path, totalParams) => {
   return response.data;
 };
 
+// GET
+
 export const exchangeInformationAPI = async () => {
-  const responseData = await getBinanceFuturesAPI("/fapi/v1/exchangeInfo", {});
+  const responseData = await getBinanceFuturesAPI("/fapi/v1/exchangeInfo");
   return responseData;
 };
 
