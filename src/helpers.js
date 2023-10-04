@@ -49,11 +49,6 @@ export const getMarkPrice = async () => {
   return markPrice.markPrice;
 };
 
-export const getAllMarkPrice = async () => {
-  const markPrice = await markPriceAPI();
-  return markPrice.filter((item) => item.symbol.includes(QUOTE_ASSET));
-};
-
 export const getAvailableQuantity = async () => {
   const [availableBalance, markPrice] = await Promise.all([
     getAvailableBalance(),
@@ -125,17 +120,6 @@ export const getTrendExtrema = async () => {
   const lowPriceArray = markPriceKlineData.map((kline) => kline[3]);
   const lowestPrice = Math.min(...lowPriceArray);
   return { highestPrice, lowestPrice };
-};
-
-export const getPrice24hrAgo = async (symbol) => {
-  const totalParams = {
-    symbol,
-    interval: "1m",
-    startTime: Date.now() - 24 * 60 * 60 * 1000,
-    limit: 1
-  };
-  const markPriceKlineData = await markPriceKlineDataAPI(totalParams);
-  return { symbol, price24hrAgo: markPriceKlineData[0][1] };
 };
 
 export const getFibonacciLevels = async () => {
