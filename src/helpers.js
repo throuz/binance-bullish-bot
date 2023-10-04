@@ -6,7 +6,8 @@ import {
   FIBONACCI_RATIOS,
   TAKE_PROFIT_INDEX,
   STOP_LOSS_INDEX,
-  ORDER_AMOUNT_PERCENTAGE
+  ORDER_AMOUNT_PERCENTAGE,
+  SAFE_ZONE_INDEX
 } from "../configs/trade-config.js";
 import {
   exchangeInformationAPI,
