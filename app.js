@@ -23,12 +23,13 @@ const executePlaceOrders = async () => {
       if (Number(positionInformation.leverage) !== LEVERAGE) {
         await changeInitialLeverage();
       }
-      const [orderQuantity, sizes] = await Promise.all([
+      const [orderQuantity, TPSL, sizes] = await Promise.all([
         getOrderQuantity(),
+        getTPSL(),
         getSizes()
       ]);
+      const { takeProfitPrice, stopLossPrice } = TPSL;
       const { tickSize, stepSize } = sizes;
-      const { takeProfitPrice, stopLossPrice } = getTPSL();
       await placeMultipleOrders(
         formatBySize(orderQuantity, stepSize),
         formatBySize(takeProfitPrice, tickSize),
@@ -46,9 +47,8 @@ const executeTradingStrategy = async () => {
     logWithTime(`allowNewOrders: ${allowNewOrders}`);
     if (allowNewOrders) {
       const topGainerSymbol = await getTopGainerSymbol();
-      if (topGainerSymbol) {
-        asyncLocalStorage.run({ symbol: topGainerSymbol }, executePlaceOrders);
-      }
+      logWithTime(`topGainerSymbol: ${topGainerSymbol}`);
+      asyncLocalStorage.run({ symbol: topGainerSymbol }, executePlaceOrders);
     }
   } catch (error) {
     await errorHandler(error);

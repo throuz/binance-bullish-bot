@@ -12,12 +12,12 @@ export const changeInitialLeverage = async () => {
   const symbol = getSymbol();
   const totalParams = { symbol, leverage: LEVERAGE, timestamp: Date.now() };
   await changeInitialLeverageAPI(totalParams);
-  await sendLineNotify("Change Initial Leverage!");
+  await sendLineNotify(`Change Initial Leverage! ${symbol} ${LEVERAGE}`);
 };
 
 export const newOrder = async (totalParams) => {
   const response = await newOrderAPI(totalParams);
-  const { symbol, type, origQty, price } = response.data;
+  const { symbol, type, origQty, price } = response;
   await sendLineNotify(`New order! ${symbol} ${type} ${origQty} ${price}`);
 };
 
