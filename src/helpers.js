@@ -17,11 +17,11 @@ import {
   markPriceKlineDataAPI,
   ticker24hrPriceChangeStatisticsAPI
 } from "./api.js";
-import { getSymbol } from "./storage.js";
+import { nodeCache } from "./cache.js";
 
 export const getSizes = async () => {
   const exchangeInformation = await exchangeInformationAPI();
-  const symbol = getSymbol();
+  const symbol = nodeCache.get("symbol");
   const symbolData = exchangeInformation.symbols.find(
     (item) => item.symbol === symbol
   );
@@ -44,7 +44,7 @@ export const getAvailableBalance = async () => {
 };
 
 export const getMarkPrice = async () => {
-  const symbol = getSymbol();
+  const symbol = nodeCache.get("symbol");
   const totalParams = { symbol };
   const markPrice = await markPriceAPI(totalParams);
   return markPrice.markPrice;
@@ -60,7 +60,7 @@ export const getAvailableQuantity = async () => {
 };
 
 export const getPositionInformation = async () => {
-  const symbol = getSymbol();
+  const symbol = nodeCache.get("symbol");
   const totalParams = { symbol, timestamp: Date.now() };
   const positionInformation = await positionInformationAPI(totalParams);
   return positionInformation[0];
@@ -109,7 +109,7 @@ export const getAllowNewOrders = async () => {
 };
 
 export const getTrendExtrema = async () => {
-  const symbol = getSymbol();
+  const symbol = nodeCache.get("symbol");
   const totalParams = {
     symbol,
     interval: INTERVAL,
@@ -166,11 +166,11 @@ export const getOrderQuantity = async () => {
   return orderQuantity;
 };
 
-export const getTopGainerSymbol = async () => {
+export const getTopGainerSymbol = async (excludeSymbol) => {
   const ticker24hrStatistics = await ticker24hrPriceChangeStatisticsAPI();
-  const filteredTicker24hrStatistics = ticker24hrStatistics.filter(
-    (statistic) => statistic.symbol.includes(QUOTE_ASSET)
-  );
+  const filteredTicker24hrStatistics = ticker24hrStatistics
+    .filter((statistic) => statistic.symbol.includes(QUOTE_ASSET))
+    .filter((statistic) => statistic.symbol !== excludeSymbol);
   let highestPriceChangePercent = -Infinity;
   let topGainerSymbol = "";
   for (const statistic of filteredTicker24hrStatistics) {

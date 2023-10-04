@@ -1,3 +1,4 @@
+import { LEVERAGE } from "../configs/trade-config.js";
 import { sendLineNotify, errorHandler } from "./common.js";
 import { getPositionInformation } from "./helpers.js";
 import {
@@ -5,11 +6,10 @@ import {
   newOrderAPI,
   cancelAllOpenOrdersAPI
 } from "./api.js";
-import { getSymbol } from "./storage.js";
-import { LEVERAGE } from "../configs/trade-config.js";
+import { nodeCache } from "./cache.js";
 
 export const changeInitialLeverage = async () => {
-  const symbol = getSymbol();
+  const symbol = nodeCache.get("symbol");
   const totalParams = { symbol, leverage: LEVERAGE, timestamp: Date.now() };
   await changeInitialLeverageAPI(totalParams);
   await sendLineNotify(`Change Initial Leverage! ${symbol} ${LEVERAGE}`);
@@ -22,14 +22,14 @@ export const newOrder = async (totalParams) => {
 };
 
 export const cancelAllOpenOrders = async () => {
-  const symbol = getSymbol();
+  const symbol = nodeCache.get("symbol");
   const totalParams = { symbol, timestamp: Date.now() };
   await cancelAllOpenOrdersAPI(totalParams);
   await sendLineNotify("Cancel all open orders!");
 };
 
 export const closePosition = async () => {
-  const symbol = getSymbol();
+  const symbol = nodeCache.get("symbol");
   const positionInformation = await getPositionInformation();
   const { positionAmt } = positionInformation;
   if (positionAmt > 0) {
@@ -50,7 +50,7 @@ export const placeMultipleOrders = async (
   stopLossPrice
 ) => {
   try {
-    const symbol = getSymbol();
+    const symbol = nodeCache.get("symbol");
     await newOrder({
       symbol,
       side: "BUY",
