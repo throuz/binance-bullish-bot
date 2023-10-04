@@ -15,29 +15,25 @@ import { asyncLocalStorage } from "./src/storage.js";
 import { LEVERAGE } from "./configs/trade-config.js";
 
 const executePlaceOrders = async () => {
-  try {
-    const isPriceInSafeZone = await getIsPriceInSafeZone();
-    logWithTime(`isPriceInSafeZone: ${isPriceInSafeZone}`);
-    if (isPriceInSafeZone) {
-      const positionInformation = await getPositionInformation();
-      if (Number(positionInformation.leverage) !== LEVERAGE) {
-        await changeInitialLeverage();
-      }
-      const [orderQuantity, TPSL, sizes] = await Promise.all([
-        getOrderQuantity(),
-        getTPSL(),
-        getSizes()
-      ]);
-      const { takeProfitPrice, stopLossPrice } = TPSL;
-      const { tickSize, stepSize } = sizes;
-      await placeMultipleOrders(
-        formatBySize(orderQuantity, stepSize),
-        formatBySize(takeProfitPrice, tickSize),
-        formatBySize(stopLossPrice, tickSize)
-      );
+  const isPriceInSafeZone = await getIsPriceInSafeZone();
+  logWithTime(`isPriceInSafeZone: ${isPriceInSafeZone}`);
+  if (isPriceInSafeZone) {
+    const positionInformation = await getPositionInformation();
+    if (Number(positionInformation.leverage) !== LEVERAGE) {
+      await changeInitialLeverage();
     }
-  } catch (error) {
-    await errorHandler(error);
+    const [orderQuantity, TPSL, sizes] = await Promise.all([
+      getOrderQuantity(),
+      getTPSL(),
+      getSizes()
+    ]);
+    const { takeProfitPrice, stopLossPrice } = TPSL;
+    const { tickSize, stepSize } = sizes;
+    await placeMultipleOrders(
+      formatBySize(orderQuantity, stepSize),
+      formatBySize(takeProfitPrice, tickSize),
+      formatBySize(stopLossPrice, tickSize)
+    );
   }
 };
 
