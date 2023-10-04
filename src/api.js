@@ -49,6 +49,13 @@ export const markPriceKlineDataAPI = async (totalParams) => {
   return response.data;
 };
 
+export const ticker24hrPriceChangeStatisticsAPI = async (totalParams) => {
+  const response = await binanceFuturesAPI.get("/fapi/v1/ticker/24hr", {
+    params: { ...totalParams }
+  });
+  return response.data;
+};
+
 // POST
 
 export const changeInitialLeverageAPI = async (totalParams) => {

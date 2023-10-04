@@ -8,7 +8,7 @@ import {
   getAllowNewOrders,
   getOrderQuantity,
   getSizes,
-  getTopLoserSymbol,
+  getTopGainerSymbol,
   getPositionInformation
 } from "./src/helpers.js";
 import { changeInitialLeverage, placeMultipleOrders } from "./src/trade.js";
@@ -53,9 +53,9 @@ const executeTradingStrategy = async () => {
     const allowNewOrders = await getAllowNewOrders();
     logWithTime(`allowNewOrders: ${allowNewOrders}`);
     if (allowNewOrders) {
-      const topLoserSymbol = await getTopLoserSymbol();
-      if (topLoserSymbol !== "NONE") {
-        asyncLocalStorage.run({ symbol: topLoserSymbol }, executePlaceOrders);
+      const topGainerSymbol = await getTopGainerSymbol();
+      if (topGainerSymbol) {
+        asyncLocalStorage.run({ symbol: topGainerSymbol }, executePlaceOrders);
       }
     }
   } catch (error) {

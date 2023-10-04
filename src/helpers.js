@@ -13,7 +13,8 @@ import {
   futuresAccountBalanceAPI,
   markPriceAPI,
   positionInformationAPI,
-  markPriceKlineDataAPI
+  markPriceKlineDataAPI,
+  ticker24hrPriceChangeStatisticsAPI
 } from "./api.js";
 import { getSymbol } from "./storage.js";
 
@@ -163,55 +164,18 @@ export const getOrderQuantity = async () => {
   return orderQuantity;
 };
 
-export const getAllPriceChangeRatio = async (filter) => {
-  const allMarkPrice = await getAllMarkPrice();
-  const promiseAllArray = allMarkPrice.map((item) =>
-    getPrice24hrAgo(item.symbol)
-  );
-  const findMarkPrice = (symbol) =>
-    allMarkPrice.find((element) => element.symbol === symbol).markPrice;
-  const allPrice24hrAgo = await Promise.all(promiseAllArray);
-  const filteredAllPrice24hrAgo = allPrice24hrAgo.filter((item) => {
-    if (filter === "GAIN") {
-      return findMarkPrice(item.symbol) > item.price24hrAgo;
-    }
-    if (filter === "LOSS") {
-      return findMarkPrice(item.symbol) < item.price24hrAgo;
-    }
-    return true;
-  });
-  const allPriceChangeRatio = filteredAllPrice24hrAgo.map((item) => ({
-    symbol: item.symbol,
-    priceChangeRatio:
-      (findMarkPrice(item.symbol) - item.price24hrAgo) / item.price24hrAgo
-  }));
-  return allPriceChangeRatio;
-};
-
 export const getTopGainerSymbol = async () => {
-  const allPriceChangeRatio = await getAllPriceChangeRatio("GAIN");
-  if (allPriceChangeRatio.length === 0) {
-    return "NONE";
+  const ticker24hrStatistics = await ticker24hrPriceChangeStatisticsAPI();
+  let highestPriceChangePercent = -Infinity;
+  let topGainerSymbol = "";
+  for (const statistic of ticker24hrStatistics) {
+    const priceChangePercent = parseFloat(statistic.priceChangePercent);
+    if (priceChangePercent > highestPriceChangePercent) {
+      highestPriceChangePercent = priceChangePercent;
+      topGainerSymbol = statistic.symbol;
+    }
   }
-  const ratios = allPriceChangeRatio.map((item) => item.priceChangeRatio);
-  const maxRatio = Math.max(...ratios);
-  const foundIndex = allPriceChangeRatio.findIndex(
-    (item) => item.priceChangeRatio === maxRatio
-  );
-  return allPriceChangeRatio[foundIndex].symbol;
-};
-
-export const getTopLoserSymbol = async () => {
-  const allPriceChangeRatio = await getAllPriceChangeRatio("LOSS");
-  if (allPriceChangeRatio.length === 0) {
-    return "NONE";
-  }
-  const ratios = allPriceChangeRatio.map((item) => item.priceChangeRatio);
-  const minRatio = Math.min(...ratios);
-  const foundIndex = allPriceChangeRatio.findIndex(
-    (item) => item.priceChangeRatio === minRatio
-  );
-  return allPriceChangeRatio[foundIndex].symbol;
+  return topGainerSymbol;
 };
 
 export const getPrecisionBySize = (size) => {
