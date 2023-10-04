@@ -1,42 +1,34 @@
 import schedule from "node-schedule";
 import { errorHandler, logWithTime } from "./src/common.js";
 import {
-  getFibonacciLevels,
-  getMarkPrice,
   getTPSL,
   formatBySize,
   getAllowNewOrders,
   getOrderQuantity,
   getSizes,
   getTopGainerSymbol,
-  getPositionInformation
+  getPositionInformation,
+  getIsPriceInSafeZone
 } from "./src/helpers.js";
 import { changeInitialLeverage, placeMultipleOrders } from "./src/trade.js";
 import { asyncLocalStorage } from "./src/storage.js";
-import { LEVERAGE, SAFE_ZONE_INDEX } from "./configs/trade-config.js";
+import { LEVERAGE } from "./configs/trade-config.js";
 
 const executePlaceOrders = async () => {
   try {
-    const positionInformation = await getPositionInformation();
-    if (Number(positionInformation.leverage) !== LEVERAGE) {
-      await changeInitialLeverage();
-    }
-    const [markPrice, fibonacciLevels] = await Promise.all([
-      getMarkPrice(),
-      getFibonacciLevels()
-    ]);
-    const isPriceInSafeZone = markPrice > fibonacciLevels[SAFE_ZONE_INDEX];
+    const isPriceInSafeZone = await getIsPriceInSafeZone();
     logWithTime(`isPriceInSafeZone: ${isPriceInSafeZone}`);
     if (isPriceInSafeZone) {
+      const positionInformation = await getPositionInformation();
+      if (Number(positionInformation.leverage) !== LEVERAGE) {
+        await changeInitialLeverage();
+      }
       const [orderQuantity, sizes] = await Promise.all([
         getOrderQuantity(),
         getSizes()
       ]);
       const { tickSize, stepSize } = sizes;
-      const { takeProfitPrice, stopLossPrice } = getTPSL(
-        markPrice,
-        fibonacciLevels
-      );
+      const { takeProfitPrice, stopLossPrice } = getTPSL();
       await placeMultipleOrders(
         formatBySize(orderQuantity, stepSize),
         formatBySize(takeProfitPrice, tickSize),

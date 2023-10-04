@@ -131,14 +131,31 @@ export const getFibonacciLevels = async () => {
   return fibonacciLevels;
 };
 
-export const getTPSL = (price, levels) => {
-  const differenceArray = levels.map((level) => Math.abs(level - price));
-  const minDifference = Math.min(...differenceArray);
-  const targetIndex = differenceArray.findIndex(
-    (diff) => diff === minDifference
-  );
-  const takeProfitPrice = levels[targetIndex + TAKE_PROFIT_INDEX];
-  const stopLossPrice = levels[targetIndex + STOP_LOSS_INDEX];
+export const getIsPriceInSafeZone = async () => {
+  const [markPrice, fibonacciLevels] = await Promise.all([
+    getMarkPrice(),
+    getFibonacciLevels()
+  ]);
+  const isPriceInSafeZone = markPrice > fibonacciLevels[SAFE_ZONE_INDEX];
+  return isPriceInSafeZone;
+};
+
+export const getTPSL = async () => {
+  const [markPrice, fibonacciLevels] = await Promise.all([
+    getMarkPrice(),
+    getFibonacciLevels()
+  ]);
+  let closestIndex = 0;
+  let closestDifference = Math.abs(markPrice - fibonacciLevels[0]);
+  for (let i = 1; i < fibonacciLevels.length; i++) {
+    const difference = Math.abs(markPrice - fibonacciLevels[i]);
+    if (difference < closestDifference) {
+      closestIndex = i;
+      closestDifference = difference;
+    }
+  }
+  const takeProfitPrice = fibonacciLevels[closestIndex + TAKE_PROFIT_INDEX];
+  const stopLossPrice = fibonacciLevels[closestIndex + STOP_LOSS_INDEX];
   return { takeProfitPrice, stopLossPrice };
 };
 
