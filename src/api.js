@@ -15,12 +15,11 @@ export const getSignature = (totalParams) => {
 
 // GET
 
-export const getBinanceFuturesAPI = async (totalParams, path) => {
+export const getBinanceFuturesAPI = async (path, totalParams) => {
   const signature = getSignature(totalParams);
   const key = path + "/" + signature;
-  const cache = nodeCache.get(key);
-  if (cache) {
-    return cache;
+  if (nodeCache.has(key)) {
+    return nodeCache.get(key);
   }
   const response = await binanceFuturesAPI.get(path, {
     params: { ...totalParams, signature }
@@ -30,38 +29,46 @@ export const getBinanceFuturesAPI = async (totalParams, path) => {
 };
 
 export const exchangeInformationAPI = async () => {
-  const responseData = await getBinanceFuturesAPI({}, "/fapi/v1/exchangeInfo");
+  const responseData = await getBinanceFuturesAPI("/fapi/v1/exchangeInfo", {});
   return responseData;
 };
 
 export const futuresAccountBalanceAPI = async (totalParams) => {
   const responseData = await getBinanceFuturesAPI(
-    totalParams,
-    "/fapi/v2/balance"
+    "/fapi/v2/balance",
+    totalParams
+  );
+  return responseData;
+};
+
+export const markPriceAPI = async (totalParams) => {
+  const responseData = await getBinanceFuturesAPI(
+    "/fapi/v1/premiumIndex",
+    totalParams
   );
   return responseData;
 };
 
 export const positionInformationAPI = async (totalParams) => {
   const responseData = await getBinanceFuturesAPI(
-    totalParams,
-    "/fapi/v2/positionRisk"
+    "/fapi/v2/positionRisk",
+    totalParams
   );
   return responseData;
 };
 
 export const markPriceKlineDataAPI = async (totalParams) => {
   const responseData = await getBinanceFuturesAPI(
-    totalParams,
-    "/fapi/v1/markPriceKlines"
+    "/fapi/v1/markPriceKlines",
+    totalParams
   );
   return responseData;
 };
 
 export const ticker24hrPriceChangeStatisticsAPI = async (totalParams) => {
   const responseData = await getBinanceFuturesAPI(
-    totalParams,
-    "/fapi/v1/ticker/24hr"
+    "/fapi/v1/ticker/24hr",
+    totalParams
   );
   return responseData;
 };
