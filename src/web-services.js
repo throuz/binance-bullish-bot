@@ -1,7 +1,9 @@
 import axios from "axios";
-import envConfig from "../configs/env-config.js";
-
-const { LINE_NOTIFY_TOKEN, REST_BASEURL, API_KEY } = envConfig;
+import {
+  LINE_NOTIFY_TOKEN,
+  REST_BASEURL,
+  API_KEY
+} from "../configs/env-config.js";
 
 export const lineNotifyAPI = axios.create({
   baseURL: "https://notify-api.line.me",

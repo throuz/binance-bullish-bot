@@ -1,5 +1,6 @@
 node_modules
 .DS_Store
 nohup.out
-env-configs.js
+env-config-dev.js
+env-config-prod.js
 test.js

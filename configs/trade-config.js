@@ -1,11 +1,9 @@
-export default {
-  QUOTE_ASSET: "USDT",
-  LEVERAGE: 10,
-  INTERVAL: "1m",
-  KLINE_LIMIT: 180,
-  FIBONACCI_RATIOS: [0.382, 0.618, 1, 1.618],
-  SAFE_ZONE_INDEX: 1,
-  TAKE_PROFIT_INDEX: 1,
-  STOP_LOSS_INDEX: -1,
-  ORDER_AMOUNT_PERCENTAGE: 75
-};
+export const QUOTE_ASSET = "USDT";
+export const LEVERAGE = 10;
+export const INTERVAL = "1m";
+export const KLINE_LIMIT = 180;
+export const FIBONACCI_RATIOS = [0.382, 0.618, 1, 1.618];
+export const SAFE_ZONE_INDEX = 1;
+export const TAKE_PROFIT_INDEX = 1;
+export const STOP_LOSS_INDEX = -1;
+export const ORDER_AMOUNT_PERCENTAGE = 75;

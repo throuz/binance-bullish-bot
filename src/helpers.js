@@ -1,14 +1,4 @@
-import tradeConfig from "../configs/trade-config.js";
 import {
-  exchangeInformationAPI,
-  futuresAccountBalanceAPI,
-  markPriceAPI,
-  positionInformationAPI,
-  markPriceKlineDataAPI
-} from "./api.js";
-import { getSymbol } from "./storage.js";
-
-const {
   QUOTE_ASSET,
   LEVERAGE,
   INTERVAL,
@@ -17,7 +7,15 @@ const {
   TAKE_PROFIT_INDEX,
   STOP_LOSS_INDEX,
   ORDER_AMOUNT_PERCENTAGE
-} = tradeConfig;
+} from "../configs/trade-config.js";
+import {
+  exchangeInformationAPI,
+  futuresAccountBalanceAPI,
+  markPriceAPI,
+  positionInformationAPI,
+  markPriceKlineDataAPI
+} from "./api.js";
+import { getSymbol } from "./storage.js";
 
 export const getSizes = async () => {
   const exchangeInformation = await exchangeInformationAPI();

@@ -1,6 +1,9 @@
-import { envConfigDev, envConfigProd } from "./env-configs.js";
+import * as envConfigDev from "./env-config-dev.js";
+import * as envConfigProd from "./env-config-prod.js";
 
 const envConfig =
   process.env.NODE_ENV === "production" ? envConfigProd : envConfigDev;
 
-export default envConfig;
+const { API_KEY, SECRET_KEY, REST_BASEURL, LINE_NOTIFY_TOKEN } = envConfig;
+
+export { API_KEY, SECRET_KEY, REST_BASEURL, LINE_NOTIFY_TOKEN };

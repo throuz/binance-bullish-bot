@@ -6,9 +6,7 @@ import {
   cancelAllOpenOrdersAPI
 } from "./api.js";
 import { getSymbol } from "./storage.js";
-import tradeConfig from "../configs/trade-config.js";
-
-const { LEVERAGE } = tradeConfig;
+import { LEVERAGE } from "../configs/trade-config.js";
 
 export const changeInitialLeverage = async () => {
   const symbol = getSymbol();

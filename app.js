@@ -13,9 +13,7 @@ import {
 } from "./src/helpers.js";
 import { changeInitialLeverage, placeMultipleOrders } from "./src/trade.js";
 import { asyncLocalStorage } from "./src/storage.js";
-import tradeConfig from "./configs/trade-config.js";
-
-const { LEVERAGE, SAFE_ZONE_INDEX } = tradeConfig;
+import { LEVERAGE, SAFE_ZONE_INDEX } from "./configs/trade-config.js";
 
 const executePlaceOrders = async () => {
   try {
