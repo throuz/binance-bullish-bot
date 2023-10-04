@@ -97,7 +97,7 @@ export const newOrderAPI = async (totalParams) => {
 
 export const cancelAllOpenOrdersAPI = async (totalParams) => {
   const signature = getSignature(totalParams);
-  const response = await binanceFuturesAPI.post("/fapi/v1/allOpenOrders", {
+  const response = await binanceFuturesAPI.delete("/fapi/v1/allOpenOrders", {
     ...totalParams,
     signature
   });
