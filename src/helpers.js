@@ -168,9 +168,12 @@ export const getOrderQuantity = async () => {
 
 export const getTopGainerSymbol = async () => {
   const ticker24hrStatistics = await ticker24hrPriceChangeStatisticsAPI();
+  const filteredTicker24hrStatistics = ticker24hrStatistics.filter(
+    (statistic) => statistic.symbol.includes(QUOTE_ASSET)
+  );
   let highestPriceChangePercent = -Infinity;
   let topGainerSymbol = "";
-  for (const statistic of ticker24hrStatistics) {
+  for (const statistic of filteredTicker24hrStatistics) {
     const priceChangePercent = parseFloat(statistic.priceChangePercent);
     if (priceChangePercent > highestPriceChangePercent) {
       highestPriceChangePercent = priceChangePercent;
