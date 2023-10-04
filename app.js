@@ -16,10 +16,10 @@ import { changeInitialLeverage, placeMultipleOrders } from "./src/trade.js";
 import { nodeCache } from "./src/cache.js";
 
 const topGainerSymbol = await getTopGainerSymbol();
-nodeCache.set("symbol", topGainerSymbol, 120);
+nodeCache.set("symbol", topGainerSymbol, 0);
 
 const availableBalance = await getAvailableBalance();
-nodeCache.set("balance", availableBalance, 120);
+nodeCache.set("balance", availableBalance, 0);
 
 const executePlaceOrders = async () => {
   logWithTime(`current symbol: ${nodeCache.get("symbol")}`);
