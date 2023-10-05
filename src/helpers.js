@@ -7,7 +7,8 @@ import {
   TAKE_PROFIT_INDEX,
   STOP_LOSS_INDEX,
   ORDER_AMOUNT_PERCENTAGE,
-  SAFE_ZONE_INDEX
+  SAFE_ZONE_INDEX,
+  MIN_VOLATILITY_RATIO
 } from "../configs/trade-config.js";
 import {
   exchangeInformationAPI,
@@ -15,7 +16,7 @@ import {
   markPriceAPI,
   positionInformationAPI,
   markPriceKlineDataAPI,
-  ticker24hrPriceChangeStatisticsAPI
+  notionalAndLeverageBracketsAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
 
@@ -123,6 +124,12 @@ export const getTrendExtrema = async () => {
   return { highestPrice, lowestPrice };
 };
 
+export const getIsPriceVolatilityEnough = async () => {
+  const { highestPrice, lowestPrice } = await getTrendExtrema();
+  const volatility = (highestPrice - lowestPrice) / lowestPrice;
+  return volatility > MIN_VOLATILITY_RATIO;
+};
+
 export const getFibonacciLevels = async () => {
   const { highestPrice, lowestPrice } = await getTrendExtrema();
   const priceDifference = highestPrice - lowestPrice;
@@ -166,21 +173,25 @@ export const getOrderQuantity = async () => {
   return orderQuantity;
 };
 
-export const getTopGainerSymbol = async (excludeSymbol) => {
-  const ticker24hrStatistics = await ticker24hrPriceChangeStatisticsAPI();
-  const filteredTicker24hrStatistics = ticker24hrStatistics
-    .filter((statistic) => statistic.symbol.includes(QUOTE_ASSET))
-    .filter((statistic) => statistic.symbol !== excludeSymbol);
-  let highestPriceChangePercent = -Infinity;
-  let topGainerSymbol = "";
-  for (const statistic of filteredTicker24hrStatistics) {
-    const priceChangePercent = parseFloat(statistic.priceChangePercent);
-    if (priceChangePercent > highestPriceChangePercent) {
-      highestPriceChangePercent = priceChangePercent;
-      topGainerSymbol = statistic.symbol;
-    }
-  }
-  return topGainerSymbol;
+export const getIsLeverageAvailable = async () => {
+  const symbol = nodeCache.get("symbol");
+  const totalParams = { symbol, timestamp: Date.now() };
+  const notionalAndLeverageBrackets = await notionalAndLeverageBracketsAPI(
+    totalParams
+  );
+  return notionalAndLeverageBrackets[0].brackets[0].initialLeverage >= LEVERAGE;
+};
+
+export const getRandomSymbol = async () => {
+  const exchangeInformation = await exchangeInformationAPI();
+  const symbols = exchangeInformation.symbols.filter(
+    (item) =>
+      item.contractType === "PERPETUAL" &&
+      item.status === "TRADING" &&
+      item.quoteAsset === QUOTE_ASSET
+  );
+  const randomIndex = Math.floor(Math.random() * symbols.length);
+  return symbols[randomIndex].symbol;
 };
 
 export const getPrecisionBySize = (size) => {

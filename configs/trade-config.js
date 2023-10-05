@@ -6,4 +6,5 @@ export const FIBONACCI_RATIOS = [0.382, 0.618, 1, 1.618];
 export const SAFE_ZONE_INDEX = 1;
 export const TAKE_PROFIT_INDEX = 1;
 export const STOP_LOSS_INDEX = -1;
-export const ORDER_AMOUNT_PERCENTAGE = 75;
+export const ORDER_AMOUNT_PERCENTAGE = 25;
+export const MIN_VOLATILITY_RATIO = 0.01;

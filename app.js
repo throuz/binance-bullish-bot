@@ -7,41 +7,43 @@ import {
   getAllowNewOrders,
   getOrderQuantity,
   getSizes,
-  getTopGainerSymbol,
   getPositionInformation,
   getIsPriceInSafeZone,
-  getAvailableBalance
+  getRandomSymbol,
+  getIsPriceVolatilityEnough,
+  getIsLeverageAvailable
 } from "./src/helpers.js";
 import { changeInitialLeverage, placeMultipleOrders } from "./src/trade.js";
 import { nodeCache } from "./src/cache.js";
 
-const topGainerSymbol = await getTopGainerSymbol();
-nodeCache.set("symbol", topGainerSymbol, 0);
-
-const availableBalance = await getAvailableBalance();
-nodeCache.set("balance", availableBalance, 0);
-
 const executePlaceOrders = async () => {
-  logWithTime(`current symbol: ${nodeCache.get("symbol")}`);
-  const isPriceInSafeZone = await getIsPriceInSafeZone();
-  logWithTime(`isPriceInSafeZone: ${isPriceInSafeZone}`);
-  if (isPriceInSafeZone) {
-    const positionInformation = await getPositionInformation();
-    if (Number(positionInformation.leverage) !== LEVERAGE) {
-      await changeInitialLeverage();
+  const isPriceVolatilityEnough = await getIsPriceVolatilityEnough();
+  logWithTime(`isPriceVolatilityEnough: ${isPriceVolatilityEnough}`);
+  if (isPriceVolatilityEnough) {
+    const isPriceInSafeZone = await getIsPriceInSafeZone();
+    logWithTime(`isPriceInSafeZone: ${isPriceInSafeZone}`);
+    if (isPriceInSafeZone) {
+      const isLeverageAvailable = await getIsLeverageAvailable();
+      logWithTime(`isLeverageAvailable: ${isLeverageAvailable}`);
+      if (isLeverageAvailable) {
+        const positionInformation = await getPositionInformation();
+        if (Number(positionInformation.leverage) !== LEVERAGE) {
+          await changeInitialLeverage();
+        }
+        const [orderQuantity, TPSL, sizes] = await Promise.all([
+          getOrderQuantity(),
+          getTPSL(),
+          getSizes()
+        ]);
+        const { takeProfitPrice, stopLossPrice } = TPSL;
+        const { tickSize, stepSize } = sizes;
+        await placeMultipleOrders(
+          formatBySize(orderQuantity, stepSize),
+          formatBySize(takeProfitPrice, tickSize),
+          formatBySize(stopLossPrice, tickSize)
+        );
+      }
     }
-    const [orderQuantity, TPSL, sizes] = await Promise.all([
-      getOrderQuantity(),
-      getTPSL(),
-      getSizes()
-    ]);
-    const { takeProfitPrice, stopLossPrice } = TPSL;
-    const { tickSize, stepSize } = sizes;
-    await placeMultipleOrders(
-      formatBySize(orderQuantity, stepSize),
-      formatBySize(takeProfitPrice, tickSize),
-      formatBySize(stopLossPrice, tickSize)
-    );
   }
 };
 
@@ -50,15 +52,9 @@ const executeTradingStrategy = async () => {
     const allowNewOrders = await getAllowNewOrders();
     logWithTime(`allowNewOrders: ${allowNewOrders}`);
     if (allowNewOrders) {
-      const availableBalance = await getAvailableBalance();
-      const needChangeSymbol = availableBalance < nodeCache.get("balance");
-      logWithTime(`needChangeSymbol: ${needChangeSymbol}`);
-      if (needChangeSymbol) {
-        const symbol = nodeCache.get("symbol");
-        const topGainerSymbol = await getTopGainerSymbol(symbol);
-        nodeCache.set("symbol", topGainerSymbol, 0);
-      }
-      nodeCache.set("balance", availableBalance, 0);
+      const randomSymbol = await getRandomSymbol();
+      nodeCache.set("symbol", randomSymbol, 0);
+      logWithTime(`randomSymbol: ${randomSymbol}`);
       await executePlaceOrders();
     }
   } catch (error) {
@@ -68,6 +64,4 @@ const executeTradingStrategy = async () => {
 
 executeTradingStrategy();
 
-schedule.scheduleJob("* * * * *", () => {
-  executeTradingStrategy();
-});
+schedule.scheduleJob("* * * * *", executeTradingStrategy);
