@@ -182,6 +182,22 @@ export const getIsLeverageAvailable = async () => {
   return notionalAndLeverageBrackets[0].brackets[0].initialLeverage >= LEVERAGE;
 };
 
+export const getAllowPlaceOrders = async () => {
+  const isPriceVolatilityEnough = await getIsPriceVolatilityEnough();
+  if (!isPriceVolatilityEnough) {
+    return false;
+  }
+  const isPriceInSafeZone = await getIsPriceInSafeZone();
+  if (!isPriceInSafeZone) {
+    return false;
+  }
+  const isLeverageAvailable = await getIsLeverageAvailable();
+  if (!isLeverageAvailable) {
+    return false;
+  }
+  return true;
+};
+
 export const getRandomSymbol = async () => {
   const exchangeInformation = await exchangeInformationAPI();
   const symbols = exchangeInformation.symbols.filter(
