@@ -15,31 +15,22 @@ export const logWithTime = (msg) => {
 
 export const errorHandler = async (error) => {
   if (error.response) {
+    const { data, status } = error.response;
     await sendLineNotify("Response status code is outside the 2xx range");
-    await sendLineNotify(
-      `error.response.data: ${JSON.stringify(error.response.data)}`,
-      false
-    );
-    await sendLineNotify(
-      `error.response.status: ${JSON.stringify(error.response.status)}`,
-      false
-    );
-    await sendLineNotify(
-      `error.response.headers: ${JSON.stringify(error.response.headers)}`,
-      false
-    );
+    await sendLineNotify(`data: ${JSON.stringify(data)}`, false);
+    await sendLineNotify(`status: ${status}`, false);
   } else if (error.request) {
     await sendLineNotify("No response was received");
-    await sendLineNotify(
-      `error.request: ${JSON.stringify(error.request)}`,
-      false
-    );
+    await sendLineNotify(`request: ${JSON.stringify(error.request)}`, false);
   } else {
     await sendLineNotify("Error occurred during request setup");
-    await sendLineNotify(
-      `error.message: ${JSON.stringify(error.message)}`,
-      false
-    );
+    await sendLineNotify(`message: ${message}`, false);
   }
-  await sendLineNotify(`error.config: ${JSON.stringify(error.config)}`, false);
+  if (error.config) {
+    const { method, baseURL, url, data } = error.config;
+    await sendLineNotify(`method: ${method}`, false);
+    await sendLineNotify(`baseURL: ${baseURL}`, false);
+    await sendLineNotify(`url: ${url}`, false);
+    await sendLineNotify(`data: ${data}`, false);
+  }
 };
