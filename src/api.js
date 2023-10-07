@@ -81,6 +81,14 @@ export const currentAllOpenOrdersAPI = async (totalParams) => {
   return responseData;
 };
 
+export const getIncomeHistoryAPI = async (totalParams) => {
+  const responseData = await getBinanceFuturesAPI(
+    "/fapi/v1/income",
+    totalParams
+  );
+  return responseData;
+};
+
 // POST
 
 export const changeInitialLeverageAPI = async (totalParams) => {

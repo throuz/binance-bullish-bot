@@ -10,7 +10,8 @@ import {
   getPositionInformation,
   getRandomSymbol,
   getAvailableBalance,
-  getAllowPlaceOrders
+  getAllowPlaceOrders,
+  getNeedChangeSymbol
 } from "./src/helpers.js";
 import { changeInitialLeverage, placeMultipleOrders } from "./src/trade.js";
 import { nodeCache } from "./src/cache.js";
@@ -39,9 +40,12 @@ const executeTradingStrategy = async () => {
     const allowNewOrders = await getAllowNewOrders();
     logWithTime(`allowNewOrders: ${allowNewOrders}`);
     if (allowNewOrders) {
-      const randomSymbol = await getRandomSymbol();
-      nodeCache.set("symbol", randomSymbol, 0);
-      logWithTime(`randomSymbol: ${randomSymbol}`);
+      const needChangeSymbol = await getNeedChangeSymbol();
+      if (needChangeSymbol) {
+        const randomSymbol = await getRandomSymbol();
+        nodeCache.set("symbol", randomSymbol, 0);
+        logWithTime(`randomSymbol: ${randomSymbol}`);
+      }
       const allowPlaceOrders = await getAllowPlaceOrders();
       logWithTime(`allowPlaceOrders: ${allowPlaceOrders}`);
       if (allowPlaceOrders) {

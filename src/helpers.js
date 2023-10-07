@@ -1,14 +1,14 @@
 import {
   QUOTE_ASSET,
   LEVERAGE,
-  INTERVAL,
+  KLINE_INTERVAL,
   KLINE_LIMIT,
   FIBONACCI_RATIOS,
   TAKE_PROFIT_INDEX,
   STOP_LOSS_INDEX,
-  ORDER_AMOUNT_PERCENTAGE,
+  ORDER_AMOUNT_PERCENT,
   SAFE_ZONE_INDEX,
-  MIN_VOLATILITY_RATIO
+  MIN_VOLATILITY_PERCENT
 } from "../configs/trade-config.js";
 import {
   exchangeInformationAPI,
@@ -17,7 +17,8 @@ import {
   positionInformationAPI,
   markPriceKlineDataAPI,
   notionalAndLeverageBracketsAPI,
-  currentAllOpenOrdersAPI
+  currentAllOpenOrdersAPI,
+  getIncomeHistoryAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
 
@@ -114,7 +115,7 @@ export const getTrendExtrema = async () => {
   const symbol = nodeCache.get("symbol");
   const totalParams = {
     symbol,
-    interval: INTERVAL,
+    interval: KLINE_INTERVAL,
     limit: KLINE_LIMIT
   };
   const markPriceKlineData = await markPriceKlineDataAPI(totalParams);
@@ -127,8 +128,8 @@ export const getTrendExtrema = async () => {
 
 export const getIsPriceVolatilityEnough = async () => {
   const { highestPrice, lowestPrice } = await getTrendExtrema();
-  const volatility = (highestPrice - lowestPrice) / lowestPrice;
-  return volatility > MIN_VOLATILITY_RATIO;
+  const volatility = ((highestPrice - lowestPrice) / lowestPrice) * 100;
+  return volatility > MIN_VOLATILITY_PERCENT;
 };
 
 export const getFibonacciLevels = async () => {
@@ -170,7 +171,7 @@ export const getTPSL = async () => {
 
 export const getOrderQuantity = async () => {
   const investableQuantity = await getInvestableQuantity();
-  const orderQuantity = investableQuantity * (ORDER_AMOUNT_PERCENTAGE / 100);
+  const orderQuantity = investableQuantity * (ORDER_AMOUNT_PERCENT / 100);
   return orderQuantity;
 };
 
@@ -216,6 +217,16 @@ export const getHasOpenOrders = async () => {
   const totalParams = { symbol, timestamp: Date.now() };
   const currentAllOpenOrders = await currentAllOpenOrdersAPI(totalParams);
   return currentAllOpenOrders.length > 0;
+};
+
+export const getNeedChangeSymbol = async () => {
+  const totalParams = {
+    incomeType: "REALIZED_PNL",
+    limit: 1,
+    timestamp: Date.now()
+  };
+  const latestRealizedPnL = await getIncomeHistoryAPI(totalParams);
+  return latestRealizedPnL[0].income < 0;
 };
 
 export const getPrecisionBySize = (size) => {
