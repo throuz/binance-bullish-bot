@@ -16,6 +16,10 @@ import {
 import { changeInitialLeverage, placeMultipleOrders } from "./src/trade.js";
 import { nodeCache } from "./src/cache.js";
 
+const randomSymbol = await getRandomSymbol();
+nodeCache.set("symbol", randomSymbol, 0);
+logWithTime(`randomSymbol: ${randomSymbol}`);
+
 const executePlaceOrders = async () => {
   const positionInformation = await getPositionInformation();
   if (Number(positionInformation.leverage) !== LEVERAGE) {
@@ -41,6 +45,7 @@ const executeTradingStrategy = async () => {
     logWithTime(`allowNewOrders: ${allowNewOrders}`);
     if (allowNewOrders) {
       const needChangeSymbol = await getNeedChangeSymbol();
+      logWithTime(`needChangeSymbol: ${needChangeSymbol}`);
       if (needChangeSymbol) {
         const randomSymbol = await getRandomSymbol();
         nodeCache.set("symbol", randomSymbol, 0);

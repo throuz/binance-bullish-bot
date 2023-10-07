@@ -225,8 +225,8 @@ export const getNeedChangeSymbol = async () => {
     limit: 1,
     timestamp: Date.now()
   };
-  const latestRealizedPnL = await getIncomeHistoryAPI(totalParams);
-  return latestRealizedPnL[0].income < 0;
+  const realizedPnLHistory = await getIncomeHistoryAPI(totalParams);
+  return realizedPnLHistory[0].income < 0;
 };
 
 export const getPrecisionBySize = (size) => {
