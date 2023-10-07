@@ -16,7 +16,8 @@ import {
   markPriceAPI,
   positionInformationAPI,
   markPriceKlineDataAPI,
-  notionalAndLeverageBracketsAPI
+  notionalAndLeverageBracketsAPI,
+  currentAllOpenOrdersAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
 
@@ -91,7 +92,7 @@ export const getAllPositionInformation = async () => {
   return positionInformation;
 };
 
-export const getHasPosition = async () => {
+export const getHasPositions = async () => {
   const allPositionInformation = await getAllPositionInformation();
   for (const info of allPositionInformation) {
     if (info.positionAmt > 0) {
@@ -102,8 +103,8 @@ export const getHasPosition = async () => {
 };
 
 export const getAllowNewOrders = async () => {
-  const hasPosition = await getHasPosition();
-  if (hasPosition) {
+  const hasPositions = await getHasPositions();
+  if (hasPositions) {
     return false;
   }
   return true;
@@ -208,6 +209,13 @@ export const getRandomSymbol = async () => {
   );
   const randomIndex = Math.floor(Math.random() * symbols.length);
   return symbols[randomIndex].symbol;
+};
+
+export const getHasOpenOrders = async () => {
+  const symbol = nodeCache.get("symbol");
+  const totalParams = { symbol, timestamp: Date.now() };
+  const currentAllOpenOrders = await currentAllOpenOrdersAPI(totalParams);
+  return currentAllOpenOrders.length > 0;
 };
 
 export const getPrecisionBySize = (size) => {

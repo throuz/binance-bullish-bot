@@ -73,6 +73,14 @@ export const notionalAndLeverageBracketsAPI = async (totalParams) => {
   return responseData;
 };
 
+export const currentAllOpenOrdersAPI = async (totalParams) => {
+  const responseData = await getBinanceFuturesAPI(
+    "/fapi/v1/openOrders",
+    totalParams
+  );
+  return responseData;
+};
+
 // POST
 
 export const changeInitialLeverageAPI = async (totalParams) => {
