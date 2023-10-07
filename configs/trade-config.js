@@ -1,10 +1,10 @@
 export const QUOTE_ASSET = "USDT";
-export const LEVERAGE = 10;
-export const INTERVAL = "1m";
+export const LEVERAGE = 5;
+export const INTERVAL = "15m";
 export const KLINE_LIMIT = 180;
 export const FIBONACCI_RATIOS = [0.382, 0.618, 1, 1.618];
 export const SAFE_ZONE_INDEX = 1;
 export const TAKE_PROFIT_INDEX = 1;
 export const STOP_LOSS_INDEX = -1;
 export const ORDER_AMOUNT_PERCENTAGE = 25;
-export const MIN_VOLATILITY_RATIO = 0.01;
+export const MIN_VOLATILITY_RATIO = 0.02;
