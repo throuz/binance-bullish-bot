@@ -13,12 +13,17 @@ import {
   getAllowPlaceOrders,
   getNeedChangeSymbol
 } from "./src/helpers.js";
-import { changeInitialLeverage, placeMultipleOrders } from "./src/trade.js";
+import {
+  changeInitialLeverage,
+  placeMultipleOrders,
+  cancelAllOpenOrders
+} from "./src/trade.js";
 import { nodeCache } from "./src/cache.js";
 
 nodeCache.set("initialized", false, 0);
 
 const executePlaceOrders = async () => {
+  await cancelAllOpenOrders();
   const positionInformation = await getPositionInformation();
   if (Number(positionInformation.leverage) !== LEVERAGE) {
     await changeInitialLeverage();
