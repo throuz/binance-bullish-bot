@@ -111,7 +111,7 @@ export const getAllowNewOrders = async () => {
   return true;
 };
 
-export const getTrendExtrema = async () => {
+export const getMarkPriceKlineData = async () => {
   const symbol = nodeCache.get("symbol");
   const totalParams = {
     symbol,
@@ -119,11 +119,27 @@ export const getTrendExtrema = async () => {
     limit: KLINE_LIMIT
   };
   const markPriceKlineData = await markPriceKlineDataAPI(totalParams);
+  return markPriceKlineData;
+};
+
+export const getTrendExtrema = async () => {
+  const markPriceKlineData = await getMarkPriceKlineData();
   const highPriceArray = markPriceKlineData.map((kline) => kline[2]);
   const highestPrice = Math.max(...highPriceArray);
+  const highestPriceIndex = highPriceArray.findIndex(
+    (price) => price === highestPrice
+  );
   const lowPriceArray = markPriceKlineData.map((kline) => kline[3]);
   const lowestPrice = Math.min(...lowPriceArray);
-  return { highestPrice, lowestPrice };
+  const lowestPriceIndex = lowPriceArray.findIndex(
+    (price) => price === lowestPrice
+  );
+  return { highestPriceIndex, highestPrice, lowestPriceIndex, lowestPrice };
+};
+
+export const getIsUptrend = async () => {
+  const { highestPriceIndex, lowestPriceIndex } = await getTrendExtrema();
+  return highestPriceIndex > lowestPriceIndex;
 };
 
 export const getIsPriceVolatilityEnough = async () => {
@@ -185,6 +201,10 @@ export const getIsLeverageAvailable = async () => {
 };
 
 export const getAllowPlaceOrders = async () => {
+  const isUptrend = await getIsUptrend();
+  if (!isUptrend) {
+    return false;
+  }
   const isPriceVolatilityEnough = await getIsPriceVolatilityEnough();
   if (!isPriceVolatilityEnough) {
     return false;
