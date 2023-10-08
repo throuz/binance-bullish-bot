@@ -16,9 +16,7 @@ import {
 import { changeInitialLeverage, placeMultipleOrders } from "./src/trade.js";
 import { nodeCache } from "./src/cache.js";
 
-const randomSymbol = await getRandomSymbol();
-nodeCache.set("symbol", randomSymbol, 0);
-logWithTime(`randomSymbol: ${randomSymbol}`);
+nodeCache.set("initialized", false, 0);
 
 const executePlaceOrders = async () => {
   const positionInformation = await getPositionInformation();
@@ -46,7 +44,7 @@ const executeTradingStrategy = async () => {
     if (allowNewOrders) {
       const needChangeSymbol = await getNeedChangeSymbol();
       logWithTime(`needChangeSymbol: ${needChangeSymbol}`);
-      if (needChangeSymbol) {
+      if (!nodeCache.get("initialized") || needChangeSymbol) {
         const randomSymbol = await getRandomSymbol();
         nodeCache.set("symbol", randomSymbol, 0);
         logWithTime(`randomSymbol: ${randomSymbol}`);
@@ -57,6 +55,9 @@ const executeTradingStrategy = async () => {
         const availableBalance = await getAvailableBalance();
         await sendLineNotify(`Balance: ${availableBalance}`);
         await executePlaceOrders();
+        if (!nodeCache.get("initialized")) {
+          nodeCache.set("initialized", true, 0);
+        }
       }
     }
   } catch (error) {
