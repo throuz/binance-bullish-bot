@@ -239,14 +239,24 @@ export const getHasOpenOrders = async () => {
   return currentAllOpenOrders.length > 0;
 };
 
-export const getNeedChangeSymbol = async () => {
+export const getLatestRealizedPnLDetails = async () => {
   const totalParams = {
     incomeType: "REALIZED_PNL",
     limit: 1,
     timestamp: Date.now()
   };
   const realizedPnLHistory = await getIncomeHistoryAPI(totalParams);
-  return realizedPnLHistory[0].income < 0;
+  return realizedPnLHistory[0];
+};
+
+export const getLatestRealizedPnLSymbol = async () => {
+  const latestRealizedPnLDetails = await getLatestRealizedPnLDetails();
+  return latestRealizedPnLDetails.symbol;
+};
+
+export const getNeedChangeSymbol = async () => {
+  const latestRealizedPnLDetails = await getLatestRealizedPnLDetails();
+  return latestRealizedPnLDetails.income < 0;
 };
 
 export const getPrecisionBySize = (size) => {

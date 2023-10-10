@@ -11,7 +11,8 @@ import {
   getRandomSymbol,
   getAvailableBalance,
   getAllowPlaceOrders,
-  getNeedChangeSymbol
+  getNeedChangeSymbol,
+  getLatestRealizedPnLSymbol
 } from "./src/helpers.js";
 import {
   changeInitialLeverage,
@@ -20,7 +21,8 @@ import {
 } from "./src/trade.js";
 import { nodeCache } from "./src/cache.js";
 
-nodeCache.set("initialized", false, 0);
+const latestRealizedPnLSymbol = await getLatestRealizedPnLSymbol();
+nodeCache.set("symbol", latestRealizedPnLSymbol, 0);
 
 const executePlaceOrders = async () => {
   await cancelAllOpenOrders();
@@ -49,7 +51,7 @@ const executeTradingStrategy = async () => {
     if (allowNewOrders) {
       const needChangeSymbol = await getNeedChangeSymbol();
       logWithTime(`needChangeSymbol: ${needChangeSymbol}`);
-      if (!nodeCache.get("initialized") || needChangeSymbol) {
+      if (needChangeSymbol) {
         const randomSymbol = await getRandomSymbol();
         nodeCache.set("symbol", randomSymbol, 0);
         logWithTime(`randomSymbol: ${randomSymbol}`);
@@ -60,9 +62,6 @@ const executeTradingStrategy = async () => {
         const availableBalance = await getAvailableBalance();
         await sendLineNotify(`Balance: ${availableBalance}`);
         await executePlaceOrders();
-        if (!nodeCache.get("initialized")) {
-          nodeCache.set("initialized", true, 0);
-        }
       }
     }
   } catch (error) {
