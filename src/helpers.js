@@ -18,7 +18,6 @@ import {
   markPriceKlineDataAPI,
   notionalAndLeverageBracketsAPI,
   currentAllOpenOrdersAPI,
-  getIncomeHistoryAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
 
