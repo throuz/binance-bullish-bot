@@ -23,11 +23,13 @@ export const newOrder = async (totalParams) => {
 
 export const cancelAllOpenOrders = async () => {
   const openOrderSymbols = await getOpenOrderSymbols();
-  const promiseAllArray = openOrderSymbols.map((symbol) =>
-    cancelAllOpenOrdersAPI({ symbol, timestamp: Date.now() })
-  );
-  await Promise.all(promiseAllArray);
-  await sendLineNotify("Cancel all open orders!");
+  if (openOrderSymbols.length > 0) {
+    const promiseAllArray = openOrderSymbols.map((symbol) =>
+      cancelAllOpenOrdersAPI({ symbol, timestamp: Date.now() })
+    );
+    await Promise.all(promiseAllArray);
+    await sendLineNotify("Cancel all open orders!");
+  }
 };
 
 export const closePosition = async () => {
