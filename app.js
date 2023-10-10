@@ -11,8 +11,7 @@ import {
   getRandomSymbol,
   getAvailableBalance,
   getAllowPlaceOrders,
-  getNeedChangeSymbol,
-  getLatestRealizedPnLSymbol
+  getIsPriceInSafeZone
 } from "./src/helpers.js";
 import {
   changeInitialLeverage,
@@ -21,8 +20,13 @@ import {
 } from "./src/trade.js";
 import { nodeCache } from "./src/cache.js";
 
-const latestRealizedPnLSymbol = await getLatestRealizedPnLSymbol();
-nodeCache.set("symbol", latestRealizedPnLSymbol, 0);
+const setRandomSymbol = async () => {
+  const randomSymbol = await getRandomSymbol();
+  nodeCache.set("symbol", randomSymbol, 0);
+  logWithTime(`randomSymbol: ${randomSymbol}`);
+};
+
+await setRandomSymbol();
 
 const executePlaceOrders = async () => {
   await cancelAllOpenOrders();
@@ -49,12 +53,10 @@ const executeTradingStrategy = async () => {
     const allowNewOrders = await getAllowNewOrders();
     logWithTime(`allowNewOrders: ${allowNewOrders}`);
     if (allowNewOrders) {
-      const needChangeSymbol = await getNeedChangeSymbol();
-      logWithTime(`needChangeSymbol: ${needChangeSymbol}`);
-      if (needChangeSymbol) {
-        const randomSymbol = await getRandomSymbol();
-        nodeCache.set("symbol", randomSymbol, 0);
-        logWithTime(`randomSymbol: ${randomSymbol}`);
+      const isPriceInSafeZone = await getIsPriceInSafeZone();
+      logWithTime(`isPriceInSafeZone: ${isPriceInSafeZone}`);
+      if (!isPriceInSafeZone) {
+        await setRandomSymbol();
       }
       const allowPlaceOrders = await getAllowPlaceOrders();
       logWithTime(`allowPlaceOrders: ${allowPlaceOrders}`);

@@ -209,10 +209,6 @@ export const getAllowPlaceOrders = async () => {
   if (!isPriceVolatilityEnough) {
     return false;
   }
-  const isPriceInSafeZone = await getIsPriceInSafeZone();
-  if (!isPriceInSafeZone) {
-    return false;
-  }
   const isLeverageAvailable = await getIsLeverageAvailable();
   if (!isLeverageAvailable) {
     return false;
@@ -239,26 +235,6 @@ export const getOpenOrderSymbols = async () => {
   const orderSymbols = currentAllOpenOrders.map((order) => order.symbol);
   const uniqueSymbols = [...new Set(orderSymbols)];
   return uniqueSymbols;
-};
-
-export const getLatestRealizedPnLDetails = async () => {
-  const totalParams = {
-    incomeType: "REALIZED_PNL",
-    limit: 1,
-    timestamp: Date.now()
-  };
-  const realizedPnLHistory = await getIncomeHistoryAPI(totalParams);
-  return realizedPnLHistory[0];
-};
-
-export const getLatestRealizedPnLSymbol = async () => {
-  const latestRealizedPnLDetails = await getLatestRealizedPnLDetails();
-  return latestRealizedPnLDetails.symbol;
-};
-
-export const getNeedChangeSymbol = async () => {
-  const latestRealizedPnLDetails = await getLatestRealizedPnLDetails();
-  return latestRealizedPnLDetails.income < 0;
 };
 
 export const getPrecisionBySize = (size) => {
