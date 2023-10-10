@@ -17,7 +17,7 @@ import {
   positionInformationAPI,
   markPriceKlineDataAPI,
   notionalAndLeverageBracketsAPI,
-  currentAllOpenOrdersAPI,
+  currentAllOpenOrdersAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
 
@@ -202,6 +202,10 @@ export const getIsLeverageAvailable = async () => {
 export const getAllowPlaceOrders = async () => {
   const isUptrend = await getIsUptrend();
   if (!isUptrend) {
+    return false;
+  }
+  const isPriceInSafeZone = await getIsPriceInSafeZone();
+  if (!isPriceInSafeZone) {
     return false;
   }
   const isPriceVolatilityEnough = await getIsPriceVolatilityEnough();

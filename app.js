@@ -10,8 +10,7 @@ import {
   getPositionInformation,
   getRandomSymbol,
   getAvailableBalance,
-  getAllowPlaceOrders,
-  getIsPriceInSafeZone
+  getAllowPlaceOrders
 } from "./src/helpers.js";
 import {
   changeInitialLeverage,
@@ -53,17 +52,14 @@ const executeTradingStrategy = async () => {
     const allowNewOrders = await getAllowNewOrders();
     logWithTime(`allowNewOrders: ${allowNewOrders}`);
     if (allowNewOrders) {
-      const isPriceInSafeZone = await getIsPriceInSafeZone();
-      logWithTime(`isPriceInSafeZone: ${isPriceInSafeZone}`);
-      if (!isPriceInSafeZone) {
-        await setRandomSymbol();
-      }
       const allowPlaceOrders = await getAllowPlaceOrders();
       logWithTime(`allowPlaceOrders: ${allowPlaceOrders}`);
       if (allowPlaceOrders) {
         const availableBalance = await getAvailableBalance();
         await sendLineNotify(`Balance: ${availableBalance}`);
         await executePlaceOrders();
+      } else {
+        await setRandomSymbol();
       }
     }
   } catch (error) {
