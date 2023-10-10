@@ -232,11 +232,13 @@ export const getRandomSymbol = async () => {
   return symbols[randomIndex].symbol;
 };
 
-export const getHasOpenOrders = async () => {
+export const getOpenOrderSymbols = async () => {
   const symbol = nodeCache.get("symbol");
   const totalParams = { symbol, timestamp: Date.now() };
   const currentAllOpenOrders = await currentAllOpenOrdersAPI(totalParams);
-  return currentAllOpenOrders.length > 0;
+  const orderSymbols = currentAllOpenOrders.map((order) => order.symbol);
+  const uniqueSymbols = [...new Set(orderSymbols)];
+  return uniqueSymbols;
 };
 
 export const getLatestRealizedPnLDetails = async () => {

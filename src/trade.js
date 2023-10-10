@@ -1,6 +1,6 @@
 import { LEVERAGE } from "../configs/trade-config.js";
 import { sendLineNotify, errorHandler } from "./common.js";
-import { getPositionInformation, getHasOpenOrders } from "./helpers.js";
+import { getPositionInformation, getOpenOrderSymbols } from "./helpers.js";
 import {
   changeInitialLeverageAPI,
   newOrderAPI,
@@ -22,13 +22,12 @@ export const newOrder = async (totalParams) => {
 };
 
 export const cancelAllOpenOrders = async () => {
-  const hasOpenOrders = await getHasOpenOrders();
-  if (hasOpenOrders) {
-    const symbol = nodeCache.get("symbol");
-    const totalParams = { symbol, timestamp: Date.now() };
-    await cancelAllOpenOrdersAPI(totalParams);
-    await sendLineNotify("Cancel all open orders!");
-  }
+  const openOrderSymbols = await getOpenOrderSymbols();
+  const promiseAllArray = openOrderSymbols.map((symbol) =>
+    cancelAllOpenOrdersAPI({ symbol, timestamp: Date.now() })
+  );
+  await Promise.all(promiseAllArray);
+  await sendLineNotify("Cancel all open orders!");
 };
 
 export const closePosition = async () => {
