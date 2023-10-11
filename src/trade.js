@@ -1,6 +1,10 @@
 import { LEVERAGE } from "../configs/trade-config.js";
 import { sendLineNotify, errorHandler } from "./common.js";
-import { getPositionInformation, getOpenOrderSymbols } from "./helpers.js";
+import {
+  getPositionInformation,
+  getOpenOrderSymbols,
+  getHasLimitOrder
+} from "./helpers.js";
 import {
   changeInitialLeverageAPI,
   newOrderAPI,
@@ -84,10 +88,14 @@ export const placeMultipleOrders = async (
         timestamp: Date.now()
       })
     ]);
+    const hasLimitOrder = await getHasLimitOrder();
+    if (hasLimitOrder) {
+      await sendLineNotify("Has limit order when place multiple orders");
+      await cancelAllOpenOrders();
+      await closePosition();
+    }
   } catch (error) {
     await sendLineNotify("Error occurred during place multiple orders");
     await errorHandler(error);
-    await cancelAllOpenOrders();
-    await closePosition();
   }
 };
