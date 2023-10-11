@@ -232,26 +232,10 @@ export const getRandomSymbol = async () => {
 };
 
 export const getCurrentAllOpenOrders = async () => {
-  const totalParams = { timestamp: Date.now() };
+  const symbol = nodeCache.get("symbol");
+  const totalParams = { symbol, timestamp: Date.now() };
   const currentAllOpenOrders = await currentAllOpenOrdersAPI(totalParams);
   return currentAllOpenOrders;
-};
-
-export const getOpenOrderSymbols = async () => {
-  const currentAllOpenOrders = await getCurrentAllOpenOrders();
-  const orderSymbols = currentAllOpenOrders.map((order) => order.symbol);
-  const uniqueSymbols = [...new Set(orderSymbols)];
-  return uniqueSymbols;
-};
-
-export const getHasLimitOrder = async () => {
-  const currentAllOpenOrders = await getCurrentAllOpenOrders();
-  for (const order of currentAllOpenOrders) {
-    if (order.type === "LIMIT") {
-      return true;
-    }
-  }
-  return false;
 };
 
 export const getPrecisionBySize = (size) => {

@@ -1,10 +1,6 @@
 import { LEVERAGE } from "../configs/trade-config.js";
 import { sendLineNotify, errorHandler } from "./common.js";
-import {
-  getPositionInformation,
-  getOpenOrderSymbols,
-  getHasLimitOrder
-} from "./helpers.js";
+import { getPositionInformation, getCurrentAllOpenOrders } from "./helpers.js";
 import {
   changeInitialLeverageAPI,
   newOrderAPI,
@@ -23,15 +19,14 @@ export const newOrder = async (totalParams) => {
   const response = await newOrderAPI(totalParams);
   const { symbol, type, origQty, price } = response;
   await sendLineNotify(`New order! ${symbol} ${type} ${origQty} ${price}`);
+  return response;
 };
 
 export const cancelAllOpenOrders = async () => {
-  const openOrderSymbols = await getOpenOrderSymbols();
-  if (openOrderSymbols.length > 0) {
-    const promiseAllArray = openOrderSymbols.map((symbol) =>
-      cancelAllOpenOrdersAPI({ symbol, timestamp: Date.now() })
-    );
-    await Promise.all(promiseAllArray);
+  const currentAllOpenOrders = await getCurrentAllOpenOrders();
+  if (currentAllOpenOrders.length > 0) {
+    const symbol = nodeCache.get("symbol");
+    await cancelAllOpenOrdersAPI({ symbol, timestamp: Date.now() });
     await sendLineNotify("Cancel all open orders!");
   }
 };
@@ -66,7 +61,7 @@ export const placeMultipleOrders = async (
       quantity,
       timestamp: Date.now()
     });
-    await Promise.all([
+    const results = await Promise.all([
       newOrder({
         symbol,
         side: "SELL",
@@ -88,8 +83,8 @@ export const placeMultipleOrders = async (
         timestamp: Date.now()
       })
     ]);
-    const hasLimitOrder = await getHasLimitOrder();
-    if (hasLimitOrder) {
+    const resultTypes = results.map((result) => result.type);
+    if (resultTypes.includes("LIMIT")) {
       await sendLineNotify("Has limit order when place multiple orders");
       await cancelAllOpenOrders();
       await closePosition();
@@ -97,5 +92,7 @@ export const placeMultipleOrders = async (
   } catch (error) {
     await sendLineNotify("Error occurred during place multiple orders");
     await errorHandler(error);
+    await cancelAllOpenOrders();
+    await closePosition();
   }
 };

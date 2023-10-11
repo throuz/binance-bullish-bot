@@ -12,11 +12,7 @@ import {
   getAvailableBalance,
   getAllowPlaceOrders
 } from "./src/helpers.js";
-import {
-  changeInitialLeverage,
-  placeMultipleOrders,
-  cancelAllOpenOrders
-} from "./src/trade.js";
+import { changeInitialLeverage, placeMultipleOrders } from "./src/trade.js";
 import { nodeCache } from "./src/cache.js";
 
 const setRandomSymbol = async () => {
@@ -28,7 +24,6 @@ const setRandomSymbol = async () => {
 await setRandomSymbol();
 
 const executePlaceOrders = async () => {
-  await cancelAllOpenOrders();
   const positionInformation = await getPositionInformation();
   if (Number(positionInformation.leverage) !== LEVERAGE) {
     await changeInitialLeverage();
