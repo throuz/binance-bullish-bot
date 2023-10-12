@@ -81,6 +81,30 @@ export const currentAllOpenOrdersAPI = async (totalParams) => {
   return responseData;
 };
 
+export const topLongShortAccountRatioAPI = async (totalParams) => {
+  const responseData = await getBinanceFuturesAPI(
+    "/futures/data/topLongShortAccountRatio",
+    totalParams
+  );
+  return responseData;
+};
+
+export const topLongShortPositionRatioAPI = async (totalParams) => {
+  const responseData = await getBinanceFuturesAPI(
+    "/futures/data/topLongShortPositionRatio",
+    totalParams
+  );
+  return responseData;
+};
+
+export const globalLongShortAccountRatioAPI = async (totalParams) => {
+  const responseData = await getBinanceFuturesAPI(
+    "/futures/data/globalLongShortAccountRatio",
+    totalParams
+  );
+  return responseData;
+};
+
 // POST
 
 export const changeInitialLeverageAPI = async (totalParams) => {

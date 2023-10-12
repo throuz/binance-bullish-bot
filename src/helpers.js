@@ -8,7 +8,8 @@ import {
   STOP_LOSS_INDEX,
   ORDER_AMOUNT_PERCENT,
   SAFE_ZONE_INDEX,
-  MIN_VOLATILITY_PERCENT
+  MIN_VOLATILITY_PERCENT,
+  TRADING_RATIOS_PERIOD
 } from "../configs/trade-config.js";
 import {
   exchangeInformationAPI,
@@ -17,7 +18,10 @@ import {
   positionInformationAPI,
   markPriceKlineDataAPI,
   notionalAndLeverageBracketsAPI,
-  currentAllOpenOrdersAPI
+  currentAllOpenOrdersAPI,
+  topLongShortAccountRatioAPI,
+  topLongShortPositionRatioAPI,
+  globalLongShortAccountRatioAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
 
@@ -199,7 +203,31 @@ export const getIsLeverageAvailable = async () => {
   return notionalAndLeverageBrackets[0].brackets[0].initialLeverage >= LEVERAGE;
 };
 
+export const getIsAllTradingRatiosBullish = async () => {
+  const symbol = nodeCache.get("symbol");
+  const totalParams = { symbol, period: TRADING_RATIOS_PERIOD, limit: 1 };
+  const results = await Promise.all([
+    topLongShortAccountRatioAPI(totalParams),
+    topLongShortPositionRatioAPI(totalParams),
+    globalLongShortAccountRatioAPI(totalParams)
+  ]);
+  for (const result of results) {
+    if (result[0].longShortRatio < 1) {
+      return false;
+    }
+  }
+  return true;
+};
+
 export const getAllowPlaceOrders = async () => {
+  const isLeverageAvailable = await getIsLeverageAvailable();
+  if (!isLeverageAvailable) {
+    return false;
+  }
+  const isAllTradingRatiosBullish = await getIsAllTradingRatiosBullish();
+  if (!isAllTradingRatiosBullish) {
+    return false;
+  }
   const isUptrend = await getIsUptrend();
   if (!isUptrend) {
     return false;
@@ -210,10 +238,6 @@ export const getAllowPlaceOrders = async () => {
   }
   const isPriceVolatilityEnough = await getIsPriceVolatilityEnough();
   if (!isPriceVolatilityEnough) {
-    return false;
-  }
-  const isLeverageAvailable = await getIsLeverageAvailable();
-  if (!isLeverageAvailable) {
     return false;
   }
   return true;
