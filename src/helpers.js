@@ -263,11 +263,10 @@ export const getCurrentAllOpenOrders = async () => {
 };
 
 export const getPrecisionBySize = (size) => {
-  const formatedSize = String(Number(size));
-  if (formatedSize === "1") {
+  if (size === "1") {
     return 0;
   } else {
-    return formatedSize.length - 2;
+    return size.indexOf("1") - 1;
   }
 };
 
