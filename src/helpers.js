@@ -9,7 +9,8 @@ import {
   ORDER_AMOUNT_PERCENT,
   SAFE_ZONE_INDEX,
   MIN_VOLATILITY_PERCENT,
-  TRADING_RATIOS_PERIOD
+  TRADING_RATIOS_PERIOD,
+  STOCK_RSI_UPPER_LIMIT
 } from "../configs/trade-config.js";
 import {
   exchangeInformationAPI,
@@ -24,6 +25,7 @@ import {
   globalLongShortAccountRatioAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
+import { stochasticrsi } from "technicalindicators";
 
 export const getSizes = async () => {
   const exchangeInformation = await exchangeInformationAPI();
@@ -219,6 +221,19 @@ export const getIsAllTradingRatiosBullish = async () => {
   return true;
 };
 
+export const getIsStockRsiUpper = async () => {
+  const markPriceKlineData = await getMarkPriceKlineData();
+  const closePriceArray = markPriceKlineData.map((kline) => Number(kline[4]));
+  const stochRsiOutput = stochasticrsi({
+    values: closePriceArray,
+    rsiPeriod: 14,
+    stochasticPeriod: 14,
+    kPeriod: 3,
+    dPeriod: 3
+  });
+  return stochRsiOutput[stochRsiOutput.length - 1].k > STOCK_RSI_UPPER_LIMIT;
+};
+
 export const getAllowPlaceOrders = async () => {
   const isLeverageAvailable = await getIsLeverageAvailable();
   if (!isLeverageAvailable) {
@@ -238,6 +253,10 @@ export const getAllowPlaceOrders = async () => {
   }
   const isPriceVolatilityEnough = await getIsPriceVolatilityEnough();
   if (!isPriceVolatilityEnough) {
+    return false;
+  }
+  const isStockRsiUpper = await getIsStockRsiUpper();
+  if (!isStockRsiUpper) {
     return false;
   }
   return true;

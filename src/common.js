@@ -1,16 +1,29 @@
 import { lineNotifyAPI } from "./web-services.js";
 
 export const sendLineNotify = async (msg, isLogWithTime = true) => {
-  await lineNotifyAPI.post("/api/notify", { message: msg });
   if (isLogWithTime) {
     logWithTime(msg);
   } else {
     console.log(msg);
   }
+  await lineNotifyAPI.post("/api/notify", { message: msg });
 };
 
 export const logWithTime = (msg) => {
   console.log(`${msg} [${new Date().toLocaleString()}]`);
+};
+
+export const stringifySafe = (obj) => {
+  const seen = new Set();
+  return JSON.stringify(obj, (_key, value) => {
+    if (typeof value === "object" && value !== null) {
+      if (seen.has(value)) {
+        return "[Circular Reference]";
+      }
+      seen.add(value);
+    }
+    return value;
+  });
 };
 
 export const errorHandler = async (error) => {
@@ -21,7 +34,7 @@ export const errorHandler = async (error) => {
     await sendLineNotify(`status: ${status}`, false);
   } else if (error.request) {
     await sendLineNotify("No response was received");
-    await sendLineNotify(`request: ${JSON.stringify(error.request)}`, false);
+    await sendLineNotify(`request: ${stringifySafe(error.request)}`, false);
   } else {
     await sendLineNotify("Error occurred during request setup");
     await sendLineNotify(`message: ${message}`, false);

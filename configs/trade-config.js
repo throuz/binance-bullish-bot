@@ -3,6 +3,7 @@ export const LEVERAGE = 10;
 export const KLINE_INTERVAL = "1m";
 export const KLINE_LIMIT = 180;
 export const MIN_VOLATILITY_PERCENT = 2;
+export const STOCK_RSI_UPPER_LIMIT = 80;
 export const TRADING_RATIOS_PERIOD = "5m";
 export const FIBONACCI_RATIOS = [0.236, 0.382, 0.618, 0.786, 1, 1.236];
 export const SAFE_ZONE_INDEX = 1;
