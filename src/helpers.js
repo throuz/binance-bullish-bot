@@ -9,8 +9,7 @@ import {
   ORDER_AMOUNT_PERCENT,
   SAFE_ZONE_INDEX,
   MIN_VOLATILITY_PERCENT,
-  TRADING_RATIOS_PERIOD,
-  STOCK_RSI_UPPER_LIMIT
+  TRADING_RATIOS_PERIOD
 } from "../configs/trade-config.js";
 import {
   exchangeInformationAPI,
@@ -231,7 +230,8 @@ export const getIsStockRsiUpper = async () => {
     kPeriod: 3,
     dPeriod: 3
   });
-  return stochRsiOutput[stochRsiOutput.length - 1].k > STOCK_RSI_UPPER_LIMIT;
+  const lastStockRsi = stochRsiOutput[stochRsiOutput.length - 1];
+  return lastStockRsi.k > lastStockRsi.d;
 };
 
 export const getAllowPlaceOrders = async () => {
