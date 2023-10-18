@@ -281,6 +281,16 @@ export const getCurrentAllOpenOrders = async () => {
   return currentAllOpenOrders;
 };
 
+export const getHasLimitOrder = async () => {
+  const currentAllOpenOrders = await getCurrentAllOpenOrders();
+  for (const order of currentAllOpenOrders) {
+    if (order.type === "LIMIT") {
+      return true;
+    }
+  }
+  return false;
+};
+
 export const getPrecisionBySize = (size) => {
   if (size === "1") {
     return 0;

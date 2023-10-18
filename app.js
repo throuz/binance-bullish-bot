@@ -12,7 +12,7 @@ import {
   getAvailableBalance,
   getAllowPlaceOrders
 } from "./src/helpers.js";
-import { changeInitialLeverage, placeMultipleOrders } from "./src/trade.js";
+import { changeInitialLeverage, placeOrders } from "./src/trade.js";
 import { nodeCache } from "./src/cache.js";
 
 const setRandomSymbol = async () => {
@@ -35,7 +35,7 @@ const executePlaceOrders = async () => {
   ]);
   const { takeProfitPrice, stopLossPrice } = TPSL;
   const { tickSize, stepSize } = sizes;
-  await placeMultipleOrders(
+  await placeOrders(
     formatBySize(orderQuantity, stepSize),
     formatBySize(takeProfitPrice, tickSize),
     formatBySize(stopLossPrice, tickSize)
