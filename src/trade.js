@@ -61,7 +61,7 @@ export const placeOrders = async (quantity, takeProfitPrice, stopLossPrice) => {
       quantity,
       timestamp: Date.now()
     });
-    const results = await Promise.all([
+    await Promise.all([
       newOrder({
         symbol,
         side: "SELL",
