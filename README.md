@@ -2,6 +2,8 @@
 
 Binance Fibonacci BOT is built based on the Fibonacci retracement strategy.
 
+## DISCLAIMER: Use at your own risk.
+
 ## Basic Usage
 
 Make sure the cross wallet has a certain amount of USDT.
