@@ -1,10 +1,10 @@
-# Binance Futures BOT
+# Binance Fibonacci BOT
 
-Binance Futures BOT is an automated trading robot specialized in Binance Futures trading.
+Binance Fibonacci BOT is built based on the Fibonacci retracement strategy.
 
 ## Basic Usage
 
-Make sure the cross wallet has a certain amount of BUSD.
+Make sure the cross wallet has a certain amount of USDT.
 
 Install all dependencies.
 
@@ -12,33 +12,25 @@ Install all dependencies.
 npm i
 ```
 
-Create `src/env.js`, the content is as follows, replace `API_KEY` and `SECRET_KEY` with your own.
+Create `configs/env-config-dev.js` or `configs/env-config-prod.js`, please refer to the `configs/env-config-example.js` content.
+
+Trading parameters can be modified in `configs/trade-config.js`.
+
+This command for `configs/env-config-dev.js`
 
 ```
-const envProd = {
-    API_KEY: "your_api_key",
-    SECRET_KEY: "your_secret_key",
-    REST_BASEURL: "https://fapi.binance.com",
-    WEBSOCKET_BASEURL: "wss://fstream.binance.com",
-    LINE_NOTIFY_TOKEN: "your_line_notify_token"
-};
+npm run start:dev
+```
 
-const envDev = {
-    API_KEY: "your_api_key",
-    SECRET_KEY: "your_secret_key",
-    REST_BASEURL: "https://testnet.binancefuture.com",
-    WEBSOCKET_BASEURL: "wss://stream.binancefuture.com",
-    LINE_NOTIFY_TOKEN: "your_line_notify_token"
-};
+This command for `configs/env-config-prod.js`
 
-const env = process.env.NODE_ENV === "production" ? envProd : envDev;
-
-export default env;
+```
+npm run start:prod
 ```
 
 ## Strategy
 
-This automatic trading strategy is improved based on the martingale strategy, take profit and stop loss of each order is 20%. If the stop loss, it will be automatically placed twice the quantity of the previous order, if the quantity exceeds the total funds, the initial quantity will be placed.
+This robot will randomly select a trading pair and automatically determine whether it meets the conditions for opening a position. When opening a position, it will set a take profit & stop loss orders based on Fibonacci retracement.
 
 ## Contributing
 
