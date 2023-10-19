@@ -37,7 +37,7 @@ export const errorHandler = async (error) => {
     await sendLineNotify(`request: ${stringifySafe(error.request)}`, false);
   } else {
     await sendLineNotify("Error occurred during request setup");
-    await sendLineNotify(`message: ${message}`, false);
+    await sendLineNotify(`message: ${error.message}`, false);
   }
   if (error.config) {
     const { method, baseURL, url, data } = error.config;
