@@ -24,16 +24,21 @@ const executeTradingStrategy = async () => {
   try {
     const hasPositions = await getHasPositions();
     logWithTime(`hasPositions: ${hasPositions}`);
-    const isAllConditionsMet = await getIsAllConditionsMet();
-    logWithTime(`allowPlaceOrders: ${isAllConditionsMet}`);
-    if (!hasPositions && isAllConditionsMet) {
-      await logBalance();
+    if (!hasPositions) {
       await setRandomSymbol();
-      await openPosition();
-    }
-    if (hasPositions && !isAllConditionsMet) {
-      await closePosition();
-      await logBalance();
+      const isAllConditionsMet = await getIsAllConditionsMet();
+      logWithTime(`allowPlaceOrders: ${isAllConditionsMet}`);
+      if (isAllConditionsMet) {
+        const availableBalance = await getAvailableBalance();
+        await sendLineNotify(`Balance: ${availableBalance}`);
+        await openPosition();
+      }
+    } else {
+      const isAllConditionsMet = await getIsAllConditionsMet();
+      logWithTime(`allowPlaceOrders: ${isAllConditionsMet}`);
+      if (!isAllConditionsMet) {
+        await closePosition();
+      }
     }
   } catch (error) {
     await errorHandler(error);
