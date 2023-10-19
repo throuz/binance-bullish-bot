@@ -1,19 +1,13 @@
 import schedule from "node-schedule";
-import { LEVERAGE } from "./configs/trade-config.js";
 import { errorHandler, logWithTime, sendLineNotify } from "./src/common.js";
 import {
-  getTPSL,
-  formatBySize,
-  getAllowNewOrders,
-  getOrderQuantity,
-  getSizes,
-  getPositionInformation,
   getRandomSymbol,
   getAvailableBalance,
-  getAllowPlaceOrders
+  getHasPositions
 } from "./src/helpers.js";
-import { changeInitialLeverage, placeOrders } from "./src/trade.js";
+import { openPosition, closePosition } from "./src/trade.js";
 import { nodeCache } from "./src/cache.js";
+import { getIsAllConditionsMet } from "./src/conditions.js";
 
 const setRandomSymbol = async () => {
   const randomSymbol = await getRandomSymbol();
@@ -21,41 +15,25 @@ const setRandomSymbol = async () => {
   logWithTime(`randomSymbol: ${randomSymbol}`);
 };
 
-await setRandomSymbol();
-
-const executePlaceOrders = async () => {
-  const positionInformation = await getPositionInformation();
-  if (Number(positionInformation.leverage) !== LEVERAGE) {
-    await changeInitialLeverage();
-  }
-  const [orderQuantity, TPSL, sizes] = await Promise.all([
-    getOrderQuantity(),
-    getTPSL(),
-    getSizes()
-  ]);
-  const { takeProfitPrice, stopLossPrice } = TPSL;
-  const { tickSize, stepSize } = sizes;
-  await placeOrders(
-    formatBySize(orderQuantity, stepSize),
-    formatBySize(takeProfitPrice, tickSize),
-    formatBySize(stopLossPrice, tickSize)
-  );
+const logBalance = async () => {
+  const availableBalance = await getAvailableBalance();
+  await sendLineNotify(`Balance: ${availableBalance}`);
 };
 
 const executeTradingStrategy = async () => {
   try {
-    const allowNewOrders = await getAllowNewOrders();
-    logWithTime(`allowNewOrders: ${allowNewOrders}`);
-    if (allowNewOrders) {
-      const allowPlaceOrders = await getAllowPlaceOrders();
-      logWithTime(`allowPlaceOrders: ${allowPlaceOrders}`);
-      if (allowPlaceOrders) {
-        const availableBalance = await getAvailableBalance();
-        await sendLineNotify(`Balance: ${availableBalance}`);
-        await executePlaceOrders();
-      } else {
-        await setRandomSymbol();
-      }
+    const hasPositions = await getHasPositions();
+    logWithTime(`hasPositions: ${hasPositions}`);
+    const isAllConditionsMet = await getIsAllConditionsMet();
+    logWithTime(`allowPlaceOrders: ${isAllConditionsMet}`);
+    if (!hasPositions && isAllConditionsMet) {
+      await logBalance();
+      await setRandomSymbol();
+      await openPosition();
+    }
+    if (hasPositions && !isAllConditionsMet) {
+      await closePosition();
+      await logBalance();
     }
   } catch (error) {
     await errorHandler(error);

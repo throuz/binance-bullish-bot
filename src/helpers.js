@@ -3,42 +3,27 @@ import {
   LEVERAGE,
   KLINE_INTERVAL,
   KLINE_LIMIT,
-  FIBONACCI_RATIOS,
-  TAKE_PROFIT_INDEX,
-  STOP_LOSS_INDEX,
-  ORDER_AMOUNT_PERCENT,
-  SAFE_ZONE_INDEX,
-  MIN_VOLATILITY_PERCENT,
-  TRADING_RATIOS_PERIOD
+  ORDER_AMOUNT_PERCENT
 } from "../configs/trade-config.js";
 import {
   exchangeInformationAPI,
   futuresAccountBalanceAPI,
   markPriceAPI,
   positionInformationAPI,
-  markPriceKlineDataAPI,
-  notionalAndLeverageBracketsAPI,
-  currentAllOpenOrdersAPI,
-  topLongShortAccountRatioAPI,
-  topLongShortPositionRatioAPI,
-  globalLongShortAccountRatioAPI
+  markPriceKlineDataAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
-import { stochasticrsi } from "technicalindicators";
 
-export const getSizes = async () => {
+export const getStepSize = async () => {
   const exchangeInformation = await exchangeInformationAPI();
   const symbol = nodeCache.get("symbol");
   const symbolData = exchangeInformation.symbols.find(
     (item) => item.symbol === symbol
   );
-  const tickSize = symbolData.filters.find(
-    (filter) => filter.filterType === "PRICE_FILTER"
-  ).tickSize;
   const stepSize = symbolData.filters.find(
     (filter) => filter.filterType === "LOT_SIZE"
   ).stepSize;
-  return { tickSize, stepSize };
+  return stepSize;
 };
 
 export const getAvailableBalance = async () => {
@@ -107,14 +92,6 @@ export const getHasPositions = async () => {
   return false;
 };
 
-export const getAllowNewOrders = async () => {
-  const hasPositions = await getHasPositions();
-  if (hasPositions) {
-    return false;
-  }
-  return true;
-};
-
 export const getMarkPriceKlineData = async () => {
   const symbol = nodeCache.get("symbol");
   const totalParams = {
@@ -141,125 +118,10 @@ export const getTrendExtrema = async () => {
   return { highestPriceIndex, highestPrice, lowestPriceIndex, lowestPrice };
 };
 
-export const getIsUptrend = async () => {
-  const { highestPriceIndex, lowestPriceIndex } = await getTrendExtrema();
-  return highestPriceIndex > lowestPriceIndex;
-};
-
-export const getIsPriceVolatilityEnough = async () => {
-  const { highestPrice, lowestPrice } = await getTrendExtrema();
-  const volatility = ((highestPrice - lowestPrice) / lowestPrice) * 100;
-  return volatility > MIN_VOLATILITY_PERCENT;
-};
-
-export const getFibonacciLevels = async () => {
-  const { highestPrice, lowestPrice } = await getTrendExtrema();
-  const priceDifference = highestPrice - lowestPrice;
-  const fibonacciLevels = FIBONACCI_RATIOS.map(
-    (ratio) => lowestPrice + priceDifference * ratio
-  );
-  return fibonacciLevels;
-};
-
-export const getIsPriceInSafeZone = async () => {
-  const [markPrice, fibonacciLevels] = await Promise.all([
-    getMarkPrice(),
-    getFibonacciLevels()
-  ]);
-  const isPriceInSafeZone = markPrice > fibonacciLevels[SAFE_ZONE_INDEX];
-  return isPriceInSafeZone;
-};
-
-export const getTPSL = async () => {
-  const [markPrice, fibonacciLevels] = await Promise.all([
-    getMarkPrice(),
-    getFibonacciLevels()
-  ]);
-  let closestIndex = 0;
-  let closestDifference = Math.abs(markPrice - fibonacciLevels[0]);
-  for (let i = 1; i < fibonacciLevels.length; i++) {
-    const difference = Math.abs(markPrice - fibonacciLevels[i]);
-    if (difference < closestDifference) {
-      closestIndex = i;
-      closestDifference = difference;
-    }
-  }
-  const takeProfitPrice = fibonacciLevels[closestIndex + TAKE_PROFIT_INDEX];
-  const stopLossPrice = fibonacciLevels[closestIndex + STOP_LOSS_INDEX];
-  return { takeProfitPrice, stopLossPrice };
-};
-
 export const getOrderQuantity = async () => {
   const investableQuantity = await getInvestableQuantity();
   const orderQuantity = investableQuantity * (ORDER_AMOUNT_PERCENT / 100);
   return orderQuantity;
-};
-
-export const getIsLeverageAvailable = async () => {
-  const symbol = nodeCache.get("symbol");
-  const totalParams = { symbol, timestamp: Date.now() };
-  const notionalAndLeverageBrackets = await notionalAndLeverageBracketsAPI(
-    totalParams
-  );
-  return notionalAndLeverageBrackets[0].brackets[0].initialLeverage >= LEVERAGE;
-};
-
-export const getIsAllTradingRatiosBullish = async () => {
-  const symbol = nodeCache.get("symbol");
-  const totalParams = { symbol, period: TRADING_RATIOS_PERIOD, limit: 1 };
-  const results = await Promise.all([
-    topLongShortAccountRatioAPI(totalParams),
-    topLongShortPositionRatioAPI(totalParams),
-    globalLongShortAccountRatioAPI(totalParams)
-  ]);
-  for (const result of results) {
-    if (result[0].longShortRatio < 1) {
-      return false;
-    }
-  }
-  return true;
-};
-
-export const getIsStockRsiUpper = async () => {
-  const markPriceKlineData = await getMarkPriceKlineData();
-  const closePriceArray = markPriceKlineData.map((kline) => Number(kline[4]));
-  const stochRsiOutput = stochasticrsi({
-    values: closePriceArray,
-    rsiPeriod: 14,
-    stochasticPeriod: 14,
-    kPeriod: 3,
-    dPeriod: 3
-  });
-  const lastStockRsi = stochRsiOutput[stochRsiOutput.length - 1];
-  return lastStockRsi.k > lastStockRsi.d;
-};
-
-export const getAllowPlaceOrders = async () => {
-  const isLeverageAvailable = await getIsLeverageAvailable();
-  if (!isLeverageAvailable) {
-    return false;
-  }
-  const isAllTradingRatiosBullish = await getIsAllTradingRatiosBullish();
-  if (!isAllTradingRatiosBullish) {
-    return false;
-  }
-  const isUptrend = await getIsUptrend();
-  if (!isUptrend) {
-    return false;
-  }
-  const isPriceInSafeZone = await getIsPriceInSafeZone();
-  if (!isPriceInSafeZone) {
-    return false;
-  }
-  const isPriceVolatilityEnough = await getIsPriceVolatilityEnough();
-  if (!isPriceVolatilityEnough) {
-    return false;
-  }
-  const isStockRsiUpper = await getIsStockRsiUpper();
-  if (!isStockRsiUpper) {
-    return false;
-  }
-  return true;
 };
 
 export const getRandomSymbol = async () => {
@@ -272,23 +134,6 @@ export const getRandomSymbol = async () => {
   );
   const randomIndex = Math.floor(Math.random() * symbols.length);
   return symbols[randomIndex].symbol;
-};
-
-export const getCurrentAllOpenOrders = async () => {
-  const symbol = nodeCache.get("symbol");
-  const totalParams = { symbol, timestamp: Date.now() };
-  const currentAllOpenOrders = await currentAllOpenOrdersAPI(totalParams);
-  return currentAllOpenOrders;
-};
-
-export const getHasLimitOrder = async () => {
-  const currentAllOpenOrders = await getCurrentAllOpenOrders();
-  for (const order of currentAllOpenOrders) {
-    if (order.type === "LIMIT") {
-      return true;
-    }
-  }
-  return false;
 };
 
 export const getPrecisionBySize = (size) => {
