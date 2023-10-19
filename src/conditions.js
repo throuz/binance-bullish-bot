@@ -52,7 +52,8 @@ export const getIsPriceInSafeZone = async () => {
     getMarkPriceKlineData()
   ]);
   const closePriceArray = markPriceKlineData.map((kline) => Number(kline[4]));
-  const safePrice = closePriceArray.reduce((a, b) => a + b, 0) / arr.length;
+  const closePriceArraySum = closePriceArray.reduce((a, b) => a + b, 0);
+  const safePrice = closePriceArraySum / closePriceArray.length;
   const isPriceInSafeZone = markPrice > safePrice;
   return isPriceInSafeZone;
 };
