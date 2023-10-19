@@ -18,8 +18,8 @@ export const changeInitialLeverage = async () => {
 
 export const newOrder = async (totalParams) => {
   const response = await newOrderAPI(totalParams);
-  const { symbol, type, origQty, price } = response;
-  await sendLineNotify(`New order! ${symbol} ${type} ${origQty} ${price}`);
+  const { symbol, side, origQty } = response;
+  await sendLineNotify(`New order! ${symbol} ${side} ${origQty}`);
   return response;
 };
 
