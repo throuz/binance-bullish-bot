@@ -7,7 +7,10 @@ import {
 } from "./src/helpers.js";
 import { openPosition, closePosition } from "./src/trade.js";
 import { nodeCache } from "./src/cache.js";
-import { getIsAllConditionsMet } from "./src/conditions.js";
+import {
+  getIsOpenConditionsMet,
+  getIsCloseConditionsMet
+} from "./src/conditions.js";
 
 const setRandomSymbol = async () => {
   const randomSymbol = await getRandomSymbol();
@@ -20,23 +23,25 @@ const logBalance = async () => {
   await sendLineNotify(`Balance: ${availableBalance}`);
 };
 
+await logBalance();
+
 const executeTradingStrategy = async () => {
   try {
     const hasPositions = await getHasPositions();
     logWithTime(`hasPositions: ${hasPositions}`);
     if (!hasPositions) {
       await setRandomSymbol();
-      const isAllConditionsMet = await getIsAllConditionsMet();
-      logWithTime(`isAllConditionsMet: ${isAllConditionsMet}`);
-      if (isAllConditionsMet) {
-        await logBalance();
+      const isOpenConditionsMet = await getIsOpenConditionsMet();
+      logWithTime(`isOpenConditionsMet: ${isOpenConditionsMet}`);
+      if (isOpenConditionsMet) {
         await openPosition();
       }
     } else {
-      const isAllConditionsMet = await getIsAllConditionsMet();
-      logWithTime(`isAllConditionsMet: ${isAllConditionsMet}`);
-      if (!isAllConditionsMet) {
+      const isCloseConditionsMet = await getIsCloseConditionsMet();
+      logWithTime(`isCloseConditionsMet: ${isCloseConditionsMet}`);
+      if (isCloseConditionsMet) {
         await closePosition();
+        await logBalance();
       }
     }
   } catch (error) {

@@ -1,8 +1,4 @@
-import {
-  LEVERAGE,
-  MIN_VOLATILITY_PERCENT,
-  TRADING_RATIOS_PERIOD
-} from "../configs/trade-config.js";
+import { LEVERAGE, TRADING_RATIOS_PERIOD } from "../configs/trade-config.js";
 import {
   notionalAndLeverageBracketsAPI,
   topLongShortAccountRatioAPI,
@@ -10,11 +6,7 @@ import {
   globalLongShortAccountRatioAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
-import {
-  getTrendExtrema,
-  getMarkPrice,
-  getMarkPriceKlineData
-} from "./helpers.js";
+import { getMarkPrice, getTrendAveragePrice } from "./helpers.js";
 
 export const getIsLeverageAvailable = async () => {
   const symbol = nodeCache.get("symbol");
@@ -33,57 +25,31 @@ export const getIsAllTradingRatiosBullish = async () => {
     topLongShortPositionRatioAPI(totalParams),
     globalLongShortAccountRatioAPI(totalParams)
   ]);
-  for (const result of results) {
-    if (result[0].longShortRatio < 1) {
-      return false;
-    }
-  }
-  return true;
-};
-
-export const getIsUptrend = async () => {
-  const { highestPriceIndex, lowestPriceIndex } = await getTrendExtrema();
-  return highestPriceIndex > lowestPriceIndex;
+  return results.every((result) => result[0].longShortRatio > 1);
 };
 
 export const getIsPriceInSafeZone = async () => {
-  const [markPrice, markPriceKlineData] = await Promise.all([
+  const [markPrice, trendAveragePrice] = await Promise.all([
     getMarkPrice(),
-    getMarkPriceKlineData()
+    getTrendAveragePrice()
   ]);
-  const closePriceArray = markPriceKlineData.map((kline) => Number(kline[4]));
-  const closePriceArraySum = closePriceArray.reduce((a, b) => a + b, 0);
-  const safePrice = closePriceArraySum / closePriceArray.length;
-  const isPriceInSafeZone = markPrice > safePrice;
+  const isPriceInSafeZone = markPrice > trendAveragePrice;
   return isPriceInSafeZone;
 };
 
-export const getIsPriceVolatilityEnough = async () => {
-  const { highestPrice, lowestPrice } = await getTrendExtrema();
-  const volatility = ((highestPrice - lowestPrice) / lowestPrice) * 100;
-  return volatility > MIN_VOLATILITY_PERCENT;
+export const getIsOpenConditionsMet = async () => {
+  const results = await Promise.all([
+    getIsLeverageAvailable(),
+    getIsAllTradingRatiosBullish(),
+    getIsPriceInSafeZone()
+  ]);
+  return results.every((result) => result);
 };
 
-export const getIsAllConditionsMet = async () => {
-  const isLeverageAvailable = await getIsLeverageAvailable();
-  if (!isLeverageAvailable) {
-    return false;
-  }
-  const isAllTradingRatiosBullish = await getIsAllTradingRatiosBullish();
-  if (!isAllTradingRatiosBullish) {
-    return false;
-  }
-  const isUptrend = await getIsUptrend();
-  if (!isUptrend) {
-    return false;
-  }
-  const isPriceInSafeZone = await getIsPriceInSafeZone();
-  if (!isPriceInSafeZone) {
-    return false;
-  }
-  const isPriceVolatilityEnough = await getIsPriceVolatilityEnough();
-  if (!isPriceVolatilityEnough) {
-    return false;
-  }
-  return true;
+export const getIsCloseConditionsMet = async () => {
+  const results = await Promise.all([
+    getIsAllTradingRatiosBullish(),
+    getIsPriceInSafeZone()
+  ]);
+  return results.some((result) => result === false);
 };

@@ -103,19 +103,12 @@ export const getMarkPriceKlineData = async () => {
   return markPriceKlineData;
 };
 
-export const getTrendExtrema = async () => {
+export const getTrendAveragePrice = async () => {
   const markPriceKlineData = await getMarkPriceKlineData();
-  const highPriceArray = markPriceKlineData.map((kline) => Number(kline[2]));
-  const highestPrice = Math.max(...highPriceArray);
-  const highestPriceIndex = highPriceArray.findIndex(
-    (price) => price === highestPrice
-  );
-  const lowPriceArray = markPriceKlineData.map((kline) => Number(kline[3]));
-  const lowestPrice = Math.min(...lowPriceArray);
-  const lowestPriceIndex = lowPriceArray.findIndex(
-    (price) => price === lowestPrice
-  );
-  return { highestPriceIndex, highestPrice, lowestPriceIndex, lowestPrice };
+  const closePriceArray = markPriceKlineData.map((kline) => Number(kline[4]));
+  const closePriceArraySum = closePriceArray.reduce((a, b) => a + b, 0);
+  const trendAveragePrice = closePriceArraySum / closePriceArray.length;
+  return trendAveragePrice;
 };
 
 export const getOrderQuantity = async () => {
