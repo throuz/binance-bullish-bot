@@ -6,7 +6,11 @@ import {
   globalLongShortAccountRatioAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
-import { getMarkPrice, getTrendAveragePrice } from "./helpers.js";
+import {
+  getMarkPrice,
+  getTrendAveragePrice,
+  getPositionInformation
+} from "./helpers.js";
 
 export const getIsLeverageAvailable = async () => {
   const symbol = nodeCache.get("symbol");
@@ -37,6 +41,11 @@ export const getIsPriceInSafeZone = async () => {
   return isPriceInSafeZone;
 };
 
+export const getIsUnRealizedProfitPositive = async () => {
+  const positionInformation = await getPositionInformation();
+  return positionInformation.unRealizedProfit > 0;
+};
+
 export const getIsOpenConditionsMet = async () => {
   const results = await Promise.all([
     getIsLeverageAvailable(),
@@ -47,9 +56,13 @@ export const getIsOpenConditionsMet = async () => {
 };
 
 export const getIsCloseConditionsMet = async () => {
-  const results = await Promise.all([
-    getIsAllTradingRatiosBullish(),
-    getIsPriceInSafeZone()
-  ]);
-  return results.some((result) => result === false);
+  const isUnRealizedProfitPositive = await getIsUnRealizedProfitPositive();
+  if (isUnRealizedProfitPositive) {
+    const results = await Promise.all([
+      getIsAllTradingRatiosBullish(),
+      getIsPriceInSafeZone()
+    ]);
+    return results.some((result) => result === false);
+  }
+  return false;
 };
