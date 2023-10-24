@@ -84,12 +84,13 @@ export const getAllPositionInformation = async () => {
 
 export const getHasPositions = async () => {
   const allPositionInformation = await getAllPositionInformation();
-  for (const info of allPositionInformation) {
-    if (info.positionAmt > 0) {
-      return true;
-    }
-  }
-  return false;
+  return allPositionInformation.some((info) => info.positionAmt > 0);
+};
+
+export const getCurrentPositionSymbol = async () => {
+  const allPositionInformation = await getAllPositionInformation();
+  const foundInfo = allPositionInformation.find((info) => info.positionAmt > 0);
+  return foundInfo.symbol;
 };
 
 export const getMarkPriceKlineData = async () => {

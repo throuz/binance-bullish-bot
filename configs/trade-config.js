@@ -3,4 +3,4 @@ export const LEVERAGE = 10;
 export const KLINE_INTERVAL = "1m";
 export const KLINE_LIMIT = 180;
 export const TRADING_RATIOS_PERIOD = "5m";
-export const ORDER_AMOUNT_PERCENT = 10;
+export const ORDER_AMOUNT_PERCENT = 90;

@@ -3,7 +3,8 @@ import { errorHandler, logWithTime, sendLineNotify } from "./src/common.js";
 import {
   getRandomSymbol,
   getAvailableBalance,
-  getHasPositions
+  getHasPositions,
+  getCurrentPositionSymbol
 } from "./src/helpers.js";
 import { openPosition, closePosition } from "./src/trade.js";
 import { nodeCache } from "./src/cache.js";
@@ -11,6 +12,12 @@ import {
   getIsOpenConditionsMet,
   getIsCloseConditionsMet
 } from "./src/conditions.js";
+
+const hasPositions = await getHasPositions();
+if (hasPositions) {
+  const currentPositionSymbol = await getCurrentPositionSymbol();
+  nodeCache.set("symbol", currentPositionSymbol, 0);
+}
 
 const setRandomSymbol = async () => {
   const randomSymbol = await getRandomSymbol();
@@ -22,8 +29,6 @@ const logBalance = async () => {
   const availableBalance = await getAvailableBalance();
   await sendLineNotify(`Balance: ${availableBalance}`);
 };
-
-await logBalance();
 
 const executeTradingStrategy = async () => {
   try {
