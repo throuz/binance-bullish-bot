@@ -9,8 +9,11 @@ import { nodeCache } from "./cache.js";
 import {
   getMarkPrice,
   getTrendAveragePrice,
-  getPositionInformation
+  getPositionInformation,
+  getClosePrices
 } from "./helpers.js";
+
+// Open conditions
 
 export const getIsLeverageAvailable = async () => {
   const symbol = nodeCache.get("symbol");
@@ -41,11 +44,6 @@ export const getIsPriceInSafeZone = async () => {
   return isPriceInSafeZone;
 };
 
-export const getIsUnRealizedProfitPositive = async () => {
-  const positionInformation = await getPositionInformation();
-  return positionInformation.unRealizedProfit > 0;
-};
-
 export const getIsOpenConditionsMet = async () => {
   const results = await Promise.all([
     getIsLeverageAvailable(),
@@ -55,14 +53,42 @@ export const getIsOpenConditionsMet = async () => {
   return results.every((result) => result);
 };
 
+// Close conditions
+
+export const getIsNotAllTradingRatiosBullish = async () => {
+  const isAllTradingRatiosBullish = await getIsAllTradingRatiosBullish();
+  return !isAllTradingRatiosBullish;
+};
+
+export const getIsUnRealizedProfitPositive = async () => {
+  const positionInformation = await getPositionInformation();
+  return positionInformation.unRealizedProfit > 0;
+};
+
+export const getIsPriceNotInSafeZone = async () => {
+  const isPriceInSafeZone = await getIsPriceInSafeZone();
+  return !isPriceInSafeZone;
+};
+
+export const getIsTakeProfit = async () => {
+  const results = await Promise.all([
+    getIsUnRealizedProfitPositive(),
+    getIsPriceNotInSafeZone()
+  ]);
+  return results.every((result) => result);
+};
+
+export const getIsStopLoss = async () => {
+  const closePrices = await getClosePrices();
+  const minPrice = Math.min(...closePrices);
+  return closePrices[closePrices.length - 1] === minPrice;
+};
+
 export const getIsCloseConditionsMet = async () => {
-  const isUnRealizedProfitPositive = await getIsUnRealizedProfitPositive();
-  if (isUnRealizedProfitPositive) {
-    const results = await Promise.all([
-      getIsAllTradingRatiosBullish(),
-      getIsPriceInSafeZone()
-    ]);
-    return results.some((result) => result === false);
-  }
-  return false;
+  const results = await Promise.all([
+    getIsNotAllTradingRatiosBullish(),
+    getIsTakeProfit(),
+    getIsStopLoss()
+  ]);
+  return results.some((result) => result);
 };

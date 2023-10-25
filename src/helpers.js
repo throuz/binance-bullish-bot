@@ -104,11 +104,16 @@ export const getMarkPriceKlineData = async () => {
   return markPriceKlineData;
 };
 
-export const getTrendAveragePrice = async () => {
+export const getClosePrices = async () => {
   const markPriceKlineData = await getMarkPriceKlineData();
-  const closePriceArray = markPriceKlineData.map((kline) => Number(kline[4]));
-  const closePriceArraySum = closePriceArray.reduce((a, b) => a + b, 0);
-  const trendAveragePrice = closePriceArraySum / closePriceArray.length;
+  const closePrices = markPriceKlineData.map((kline) => Number(kline[4]));
+  return closePrices;
+};
+
+export const getTrendAveragePrice = async () => {
+  const closePrices = await getClosePrices();
+  const closePricesSum = closePrices.reduce((a, b) => a + b, 0);
+  const trendAveragePrice = closePricesSum / closePrices.length;
   return trendAveragePrice;
 };
 
