@@ -129,7 +129,8 @@ export const getRandomSymbol = async () => {
     (item) =>
       item.contractType === "PERPETUAL" &&
       item.status === "TRADING" &&
-      item.quoteAsset === QUOTE_ASSET
+      item.quoteAsset === QUOTE_ASSET &&
+      item.symbol !== "USDCUSDT"
   );
   const randomIndex = Math.floor(Math.random() * symbols.length);
   return symbols[randomIndex].symbol;

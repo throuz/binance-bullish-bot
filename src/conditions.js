@@ -1,6 +1,7 @@
 import { LEVERAGE, TRADING_RATIOS_PERIOD } from "../configs/trade-config.js";
 import {
   notionalAndLeverageBracketsAPI,
+  tickerPrice24hrChangeStatisticsAPI,
   topLongShortAccountRatioAPI,
   topLongShortPositionRatioAPI,
   globalLongShortAccountRatioAPI
@@ -9,8 +10,7 @@ import { nodeCache } from "./cache.js";
 import {
   getMarkPrice,
   getTrendAveragePrice,
-  getPositionInformation,
-  getClosePrices
+  getPositionInformation
 } from "./helpers.js";
 
 // Open conditions
@@ -22,6 +22,14 @@ export const getIsLeverageAvailable = async () => {
     totalParams
   );
   return notionalAndLeverageBrackets[0].brackets[0].initialLeverage >= LEVERAGE;
+};
+
+export const getIsPrice24hrChangeBullish = async () => {
+  const symbol = nodeCache.get("symbol");
+  const totalParams = { symbol };
+  const tickerPrice24hrChangeStatistics =
+    await tickerPrice24hrChangeStatisticsAPI(totalParams);
+  return tickerPrice24hrChangeStatistics.priceChangePercent > 0;
 };
 
 export const getIsAllTradingRatiosBullish = async () => {
@@ -47,6 +55,7 @@ export const getIsPriceInSafeZone = async () => {
 export const getIsOpenConditionsMet = async () => {
   const results = await Promise.all([
     getIsLeverageAvailable(),
+    getIsPrice24hrChangeBullish(),
     getIsAllTradingRatiosBullish(),
     getIsPriceInSafeZone()
   ]);
@@ -78,17 +87,10 @@ export const getIsTakeProfit = async () => {
   return results.every((result) => result);
 };
 
-export const getIsStopLoss = async () => {
-  const closePrices = await getClosePrices();
-  const minPrice = Math.min(...closePrices);
-  return closePrices[closePrices.length - 1] === minPrice;
-};
-
 export const getIsCloseConditionsMet = async () => {
   const results = await Promise.all([
     getIsNotAllTradingRatiosBullish(),
-    getIsTakeProfit(),
-    getIsStopLoss()
+    getIsTakeProfit()
   ]);
   return results.some((result) => result);
 };
