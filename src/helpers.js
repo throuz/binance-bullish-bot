@@ -1,16 +1,13 @@
 import {
   QUOTE_ASSET,
   LEVERAGE,
-  KLINE_INTERVAL,
-  KLINE_LIMIT,
   ORDER_AMOUNT_PERCENT
 } from "../configs/trade-config.js";
 import {
   exchangeInformationAPI,
   futuresAccountBalanceAPI,
   markPriceAPI,
-  positionInformationAPI,
-  markPriceKlineDataAPI
+  positionInformationAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
 
@@ -91,30 +88,6 @@ export const getCurrentPositionSymbol = async () => {
   const allPositionInformation = await getAllPositionInformation();
   const foundInfo = allPositionInformation.find((info) => info.positionAmt > 0);
   return foundInfo.symbol;
-};
-
-export const getMarkPriceKlineData = async () => {
-  const symbol = nodeCache.get("symbol");
-  const totalParams = {
-    symbol,
-    interval: KLINE_INTERVAL,
-    limit: KLINE_LIMIT
-  };
-  const markPriceKlineData = await markPriceKlineDataAPI(totalParams);
-  return markPriceKlineData;
-};
-
-export const getClosePrices = async () => {
-  const markPriceKlineData = await getMarkPriceKlineData();
-  const closePrices = markPriceKlineData.map((kline) => Number(kline[4]));
-  return closePrices;
-};
-
-export const getTrendAveragePrice = async () => {
-  const closePrices = await getClosePrices();
-  const closePricesSum = closePrices.reduce((a, b) => a + b, 0);
-  const trendAveragePrice = closePricesSum / closePrices.length;
-  return trendAveragePrice;
 };
 
 export const getOrderQuantity = async () => {

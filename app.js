@@ -41,7 +41,8 @@ const executeTradingStrategy = async () => {
       if (isOpenConditionsMet) {
         await openPosition();
       }
-    } else {
+    }
+    if (hasPositions) {
       const isCloseConditionsMet = await getIsCloseConditionsMet();
       logWithTime(`isCloseConditionsMet: ${isCloseConditionsMet}`);
       if (isCloseConditionsMet) {
