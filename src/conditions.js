@@ -6,6 +6,7 @@ import {
   globalLongShortAccountRatioAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
+import { hexagrams, getRandomSixyao } from "./yi-jing.js";
 import {
   getMarkPrice,
   getTrendAveragePrice,
@@ -55,13 +56,22 @@ export const getIsPrice24hrChangeBullish = async () => {
   return statistics.priceChangePercent > 0;
 };
 
+export const getIsHexagramIndicateInvestmentPossible = () => {
+  const randomSixyao = getRandomSixyao();
+  const foundHexagram = hexagrams.find(
+    (hexagram) => hexagram.sixyao === randomSixyao
+  );
+  return foundHexagram.result;
+};
+
 export const getIsOpenConditionsMet = async () => {
   const results = await Promise.all([
     getIsLeverageAvailable(),
     getIsAllTradingRatiosBullish(),
     getIsPriceInSafeZone(),
     getIsPriceAboveWeightedAvgPrice(),
-    getIsPrice24hrChangeBullish()
+    getIsPrice24hrChangeBullish(),
+    getIsHexagramIndicateInvestmentPossible
   ]);
   return results.every((result) => result);
 };
