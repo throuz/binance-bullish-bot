@@ -10,7 +10,8 @@ import {
   futuresAccountBalanceAPI,
   markPriceAPI,
   positionInformationAPI,
-  markPriceKlineDataAPI
+  markPriceKlineDataAPI,
+  tickerPrice24hrChangeStatisticsAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
 
@@ -134,6 +135,13 @@ export const getRandomSymbol = async () => {
   );
   const randomIndex = Math.floor(Math.random() * symbols.length);
   return symbols[randomIndex].symbol;
+};
+
+export const getTickerPrice24hrChangeStatistics = async () => {
+  const symbol = nodeCache.get("symbol");
+  const totalParams = { symbol };
+  const statistics = await tickerPrice24hrChangeStatisticsAPI(totalParams);
+  return statistics;
 };
 
 export const getPrecisionBySize = (size) => {

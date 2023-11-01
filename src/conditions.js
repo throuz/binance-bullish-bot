@@ -1,7 +1,6 @@
 import { LEVERAGE, TRADING_RATIOS_PERIOD } from "../configs/trade-config.js";
 import {
   notionalAndLeverageBracketsAPI,
-  tickerPrice24hrChangeStatisticsAPI,
   topLongShortAccountRatioAPI,
   topLongShortPositionRatioAPI,
   globalLongShortAccountRatioAPI
@@ -10,7 +9,8 @@ import { nodeCache } from "./cache.js";
 import {
   getMarkPrice,
   getTrendAveragePrice,
-  getPositionInformation
+  getPositionInformation,
+  getTickerPrice24hrChangeStatistics
 } from "./helpers.js";
 
 // Open conditions
@@ -45,11 +45,14 @@ export const getIsPriceInSafeZone = async () => {
 };
 
 export const getIsPriceAboveWeightedAvgPrice = async () => {
-  const symbol = nodeCache.get("symbol");
-  const totalParams = { symbol };
-  const statistics = await tickerPrice24hrChangeStatisticsAPI(totalParams);
+  const statistics = await getTickerPrice24hrChangeStatistics();
   const { lastPrice, weightedAvgPrice } = statistics;
   return lastPrice > weightedAvgPrice;
+};
+
+export const getIsPrice24hrChangeBullish = async () => {
+  const statistics = await getTickerPrice24hrChangeStatistics();
+  return statistics.priceChangePercent > 0;
 };
 
 export const getIsOpenConditionsMet = async () => {
@@ -57,7 +60,8 @@ export const getIsOpenConditionsMet = async () => {
     getIsLeverageAvailable(),
     getIsAllTradingRatiosBullish(),
     getIsPriceInSafeZone(),
-    getIsPriceAboveWeightedAvgPrice()
+    getIsPriceAboveWeightedAvgPrice(),
+    getIsPrice24hrChangeBullish()
   ]);
   return results.every((result) => result);
 };
