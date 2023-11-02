@@ -137,6 +137,14 @@ export const getRandomSymbol = async () => {
   return symbols[randomIndex].symbol;
 };
 
+export const getAllTickerPrice24hrChangeStatistics = async () => {
+  const allStatistics = await tickerPrice24hrChangeStatisticsAPI();
+  const filteredAllStatistics = allStatistics.filter((statistics) =>
+    statistics.symbol.includes(QUOTE_ASSET)
+  );
+  return filteredAllStatistics;
+};
+
 export const getTickerPrice24hrChangeStatistics = async () => {
   const symbol = nodeCache.get("symbol");
   const totalParams = { symbol };

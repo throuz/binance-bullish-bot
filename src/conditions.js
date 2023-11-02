@@ -11,6 +11,7 @@ import {
   getMarkPrice,
   getTrendAveragePrice,
   getPositionInformation,
+  getAllTickerPrice24hrChangeStatistics,
   getTickerPrice24hrChangeStatistics
 } from "./helpers.js";
 
@@ -45,6 +46,17 @@ export const getIsPriceInSafeZone = async () => {
   return isPriceInSafeZone;
 };
 
+export const getIsUpwardSymbolsMajority = async () => {
+  const allStatistics = await getAllTickerPrice24hrChangeStatistics();
+  const upwardSymbolsLength = allStatistics.filter(
+    (statistics) => statistics.priceChangePercent > 0
+  ).length;
+  const downwardSymbolsLength = allStatistics.filter(
+    (statistics) => statistics.priceChangePercent < 0
+  ).length;
+  return upwardSymbolsLength > downwardSymbolsLength;
+};
+
 export const getIsPriceAboveWeightedAvgPrice = async () => {
   const statistics = await getTickerPrice24hrChangeStatistics();
   const { lastPrice, weightedAvgPrice } = statistics;
@@ -69,6 +81,7 @@ export const getIsOpenConditionsMet = async () => {
     getIsLeverageAvailable(),
     getIsAllTradingRatiosBullish(),
     getIsPriceInSafeZone(),
+    getIsUpwardSymbolsMajority(),
     getIsPriceAboveWeightedAvgPrice(),
     getIsPrice24hrChangeBullish(),
     getIsHexagramIndicateInvestmentPossible
