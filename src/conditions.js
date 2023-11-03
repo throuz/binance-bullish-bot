@@ -10,7 +10,6 @@ import { hexagrams, getRandomSixyao } from "./yi-jing.js";
 import {
   getMarkPrice,
   getTrendAveragePrice,
-  getPositionInformation,
   getAllTickerPrice24hrChangeStatistics,
   getTickerPrice24hrChangeStatistics
 } from "./helpers.js";
@@ -96,47 +95,15 @@ export const getIsNotAllTradingRatiosBullish = async () => {
   return !isAllTradingRatiosBullish;
 };
 
-export const getIsUnRealizedProfitPositive = async () => {
-  const positionInformation = await getPositionInformation();
-  return positionInformation.unRealizedProfit > 0;
-};
-
-export const getIsUnRealizedProfitNegative = async () => {
-  const isUnRealizedProfitPositive = await getIsUnRealizedProfitPositive();
-  return !isUnRealizedProfitPositive;
-};
-
 export const getIsPriceNotInSafeZone = async () => {
   const isPriceInSafeZone = await getIsPriceInSafeZone();
   return !isPriceInSafeZone;
 };
 
-export const getIsPriceBelowWeightedAvgPrice = async () => {
-  const isPriceAboveWeightedAvgPrice = await getIsPriceAboveWeightedAvgPrice();
-  return !isPriceAboveWeightedAvgPrice;
-};
-
-export const getIsTakeProfit = async () => {
-  const results = await Promise.all([
-    getIsUnRealizedProfitPositive(),
-    getIsPriceNotInSafeZone()
-  ]);
-  return results.every((result) => result);
-};
-
-export const getIsStopLoss = async () => {
-  const results = await Promise.all([
-    getIsUnRealizedProfitNegative(),
-    getIsPriceBelowWeightedAvgPrice()
-  ]);
-  return results.every((result) => result);
-};
-
 export const getIsCloseConditionsMet = async () => {
   const results = await Promise.all([
     getIsNotAllTradingRatiosBullish(),
-    getIsTakeProfit(),
-    getIsStopLoss()
+    getIsPriceNotInSafeZone()
   ]);
   return results.some((result) => result);
 };
