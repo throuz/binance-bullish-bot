@@ -7,12 +7,6 @@ import {
 } from "./api.js";
 import { nodeCache } from "./cache.js";
 import { hexagrams, getRandomSixyao } from "./yi-jing.js";
-import {
-  getMarkPrice,
-  getTrendAveragePrice,
-  getAllTickerPrice24hrChangeStatistics,
-  getTickerPrice24hrChangeStatistics
-} from "./helpers.js";
 
 // Open conditions
 
@@ -36,37 +30,6 @@ export const getIsAllTradingRatiosBullish = async () => {
   return results.every((result) => result[0].longShortRatio > 1);
 };
 
-export const getIsPriceInSafeZone = async () => {
-  const [markPrice, trendAveragePrice] = await Promise.all([
-    getMarkPrice(),
-    getTrendAveragePrice()
-  ]);
-  const isPriceInSafeZone = markPrice > trendAveragePrice;
-  return isPriceInSafeZone;
-};
-
-export const getIsUpwardSymbolsMajority = async () => {
-  const allStatistics = await getAllTickerPrice24hrChangeStatistics();
-  const upwardSymbolsLength = allStatistics.filter(
-    (statistics) => statistics.priceChangePercent > 0
-  ).length;
-  const downwardSymbolsLength = allStatistics.filter(
-    (statistics) => statistics.priceChangePercent < 0
-  ).length;
-  return upwardSymbolsLength > downwardSymbolsLength;
-};
-
-export const getIsPriceAboveWeightedAvgPrice = async () => {
-  const statistics = await getTickerPrice24hrChangeStatistics();
-  const { lastPrice, weightedAvgPrice } = statistics;
-  return lastPrice > weightedAvgPrice;
-};
-
-export const getIsPrice24hrChangeBullish = async () => {
-  const statistics = await getTickerPrice24hrChangeStatistics();
-  return statistics.priceChangePercent > 0;
-};
-
 export const getIsHexagramIndicateInvestmentPossible = () => {
   const randomSixyao = getRandomSixyao();
   const foundHexagram = hexagrams.find(
@@ -79,10 +42,6 @@ export const getIsOpenConditionsMet = async () => {
   const results = await Promise.all([
     getIsLeverageAvailable(),
     getIsAllTradingRatiosBullish(),
-    getIsPriceInSafeZone(),
-    getIsUpwardSymbolsMajority(),
-    getIsPriceAboveWeightedAvgPrice(),
-    getIsPrice24hrChangeBullish(),
     getIsHexagramIndicateInvestmentPossible
   ]);
   return results.every((result) => result);
@@ -95,15 +54,7 @@ export const getIsNotAllTradingRatiosBullish = async () => {
   return !isAllTradingRatiosBullish;
 };
 
-export const getIsPriceNotInSafeZone = async () => {
-  const isPriceInSafeZone = await getIsPriceInSafeZone();
-  return !isPriceInSafeZone;
-};
-
 export const getIsCloseConditionsMet = async () => {
-  const results = await Promise.all([
-    getIsNotAllTradingRatiosBullish(),
-    getIsPriceNotInSafeZone()
-  ]);
-  return results.some((result) => result);
+  const isNotAllTradingRatiosBullish = await getIsNotAllTradingRatiosBullish();
+  return isNotAllTradingRatiosBullish;
 };

@@ -10,8 +10,7 @@ import {
   futuresAccountBalanceAPI,
   markPriceAPI,
   positionInformationAPI,
-  markPriceKlineDataAPI,
-  tickerPrice24hrChangeStatisticsAPI
+  markPriceKlineDataAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
 
@@ -111,13 +110,6 @@ export const getClosePrices = async () => {
   return closePrices;
 };
 
-export const getTrendAveragePrice = async () => {
-  const closePrices = await getClosePrices();
-  const closePricesSum = closePrices.reduce((a, b) => a + b, 0);
-  const trendAveragePrice = closePricesSum / closePrices.length;
-  return trendAveragePrice;
-};
-
 export const getOrderQuantity = async () => {
   const investableQuantity = await getInvestableQuantity();
   const orderQuantity = investableQuantity * (ORDER_AMOUNT_PERCENT / 100);
@@ -135,21 +127,6 @@ export const getRandomSymbol = async () => {
   );
   const randomIndex = Math.floor(Math.random() * symbols.length);
   return symbols[randomIndex].symbol;
-};
-
-export const getAllTickerPrice24hrChangeStatistics = async () => {
-  const allStatistics = await tickerPrice24hrChangeStatisticsAPI();
-  const filteredAllStatistics = allStatistics.filter((statistics) =>
-    statistics.symbol.includes(QUOTE_ASSET)
-  );
-  return filteredAllStatistics;
-};
-
-export const getTickerPrice24hrChangeStatistics = async () => {
-  const symbol = nodeCache.get("symbol");
-  const totalParams = { symbol };
-  const statistics = await tickerPrice24hrChangeStatisticsAPI(totalParams);
-  return statistics;
 };
 
 export const getPrecisionBySize = (size) => {

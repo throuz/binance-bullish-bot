@@ -51,7 +51,7 @@ export const hexagrams = [
     sixyao: "111011",
     name: "小畜",
     text: "小有財運，可以有小小的積蓄，但無法大富大貴。",
-    result: true
+    result: false
   },
   {
     sixyao: "110111",
@@ -105,7 +105,7 @@ export const hexagrams = [
     sixyao: "011001",
     name: "蠱",
     text: "有偏財運，雖不是不義之財但並非靠努力所得，因此長期來說仍有隱憂。",
-    result: true
+    result: false
   },
   {
     sixyao: "110000",
@@ -123,7 +123,7 @@ export const hexagrams = [
     sixyao: "100101",
     name: "噬嗑",
     text: "有利可圖，但是要注意可能因此而惹上官司。",
-    result: true
+    result: false
   },
   {
     sixyao: "101001",
@@ -363,7 +363,7 @@ export const hexagrams = [
     sixyao: "110011",
     name: "中孚",
     text: "險中爭利。",
-    result: true
+    result: false
   },
   {
     sixyao: "001100",

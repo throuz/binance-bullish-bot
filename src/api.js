@@ -97,14 +97,6 @@ export const globalLongShortAccountRatioAPI = async (totalParams) => {
   return responseData;
 };
 
-export const tickerPrice24hrChangeStatisticsAPI = async (totalParams) => {
-  const responseData = await getBinanceFuturesAPI(
-    "/fapi/v1/ticker/24hr",
-    totalParams
-  );
-  return responseData;
-};
-
 // POST
 
 export const changeInitialLeverageAPI = async (totalParams) => {
