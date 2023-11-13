@@ -1,18 +1,21 @@
-import {
-  QUOTE_ASSET,
-  LEVERAGE,
-  KLINE_INTERVAL,
-  KLINE_LIMIT,
-  ORDER_AMOUNT_PERCENT
-} from "../configs/trade-config.js";
+import { QUOTE_ASSET, ORDER_AMOUNT_PERCENT } from "../configs/trade-config.js";
 import {
   exchangeInformationAPI,
   futuresAccountBalanceAPI,
   markPriceAPI,
   positionInformationAPI,
-  markPriceKlineDataAPI
+  notionalAndLeverageBracketsAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
+
+export const getMaxLeverage = async () => {
+  const symbol = nodeCache.get("symbol");
+  const totalParams = { symbol, timestamp: Date.now() };
+  const notionalAndLeverageBrackets = await notionalAndLeverageBracketsAPI(
+    totalParams
+  );
+  return notionalAndLeverageBrackets[0].brackets[0].initialLeverage;
+};
 
 export const getStepSize = async () => {
   const exchangeInformation = await exchangeInformationAPI();
@@ -43,11 +46,12 @@ export const getMarkPrice = async () => {
 };
 
 export const getAvailableQuantity = async () => {
-  const [availableBalance, markPrice] = await Promise.all([
+  const [availableBalance, maxLeverage, markPrice] = await Promise.all([
     getAvailableBalance(),
+    getMaxLeverage(),
     getMarkPrice()
   ]);
-  const availableFunds = availableBalance * LEVERAGE;
+  const availableFunds = availableBalance * maxLeverage;
   return availableFunds / markPrice;
 };
 
@@ -56,6 +60,12 @@ export const getPositionInformation = async () => {
   const totalParams = { symbol, timestamp: Date.now() };
   const positionInformation = await positionInformationAPI(totalParams);
   return positionInformation[0];
+};
+
+export const getPNLPercent = async () => {
+  const positionInformation = await getPositionInformation();
+  const { unRealizedProfit, notional, leverage } = positionInformation;
+  return (unRealizedProfit / (notional / leverage)) * 100;
 };
 
 export const getAllowableQuantity = async () => {
@@ -91,23 +101,6 @@ export const getCurrentPositionSymbol = async () => {
   const allPositionInformation = await getAllPositionInformation();
   const foundInfo = allPositionInformation.find((info) => info.positionAmt > 0);
   return foundInfo.symbol;
-};
-
-export const getMarkPriceKlineData = async () => {
-  const symbol = nodeCache.get("symbol");
-  const totalParams = {
-    symbol,
-    interval: KLINE_INTERVAL,
-    limit: KLINE_LIMIT
-  };
-  const markPriceKlineData = await markPriceKlineDataAPI(totalParams);
-  return markPriceKlineData;
-};
-
-export const getClosePrices = async () => {
-  const markPriceKlineData = await getMarkPriceKlineData();
-  const closePrices = markPriceKlineData.map((kline) => Number(kline[4]));
-  return closePrices;
 };
 
 export const getOrderQuantity = async () => {

@@ -57,14 +57,6 @@ export const positionInformationAPI = async (totalParams) => {
   return responseData;
 };
 
-export const markPriceKlineDataAPI = async (totalParams) => {
-  const responseData = await getBinanceFuturesAPI(
-    "/fapi/v1/markPriceKlines",
-    totalParams
-  );
-  return responseData;
-};
-
 export const notionalAndLeverageBracketsAPI = async (totalParams) => {
   const responseData = await getBinanceFuturesAPI(
     "/fapi/v1/leverageBracket",

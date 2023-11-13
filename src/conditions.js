@@ -1,23 +1,14 @@
-import { LEVERAGE, TRADING_RATIOS_PERIOD } from "../configs/trade-config.js";
+import { TRADING_RATIOS_PERIOD } from "../configs/trade-config.js";
 import {
-  notionalAndLeverageBracketsAPI,
   topLongShortAccountRatioAPI,
   topLongShortPositionRatioAPI,
   globalLongShortAccountRatioAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
 import { hexagrams, getRandomSixyao } from "./yi-jing.js";
+import { getPNLPercent } from "./helpers.js";
 
 // Open conditions
-
-export const getIsLeverageAvailable = async () => {
-  const symbol = nodeCache.get("symbol");
-  const totalParams = { symbol, timestamp: Date.now() };
-  const notionalAndLeverageBrackets = await notionalAndLeverageBracketsAPI(
-    totalParams
-  );
-  return notionalAndLeverageBrackets[0].brackets[0].initialLeverage >= LEVERAGE;
-};
 
 export const getIsAllTradingRatiosBullish = async () => {
   const symbol = nodeCache.get("symbol");
@@ -40,7 +31,6 @@ export const getIsHexagramIndicateInvestmentPossible = () => {
 
 export const getIsOpenConditionsMet = async () => {
   const results = await Promise.all([
-    getIsLeverageAvailable(),
     getIsAllTradingRatiosBullish(),
     getIsHexagramIndicateInvestmentPossible
   ]);
@@ -54,7 +44,21 @@ export const getIsNotAllTradingRatiosBullish = async () => {
   return !isAllTradingRatiosBullish;
 };
 
+export const getIsTakeProfitReached = async () => {
+  const PNLPercent = await getPNLPercent();
+  return PNLPercent > TAKE_PROFIT_PERCENT;
+};
+
+export const getIsStopLossReached = async () => {
+  const PNLPercent = await getPNLPercent();
+  return PNLPercent < STOP_LOSS_PERCENT;
+};
+
 export const getIsCloseConditionsMet = async () => {
-  const isNotAllTradingRatiosBullish = await getIsNotAllTradingRatiosBullish();
-  return isNotAllTradingRatiosBullish;
+  const results = await Promise.all([
+    getIsNotAllTradingRatiosBullish(),
+    getIsTakeProfitReached(),
+    getIsStopLossReached()
+  ]);
+  return results.some((result) => result);
 };

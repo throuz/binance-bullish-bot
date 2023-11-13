@@ -1,33 +1,34 @@
-import { LEVERAGE } from "../configs/trade-config.js";
 import { sendLineNotify } from "./common.js";
 import {
   getPositionInformation,
   getOrderQuantity,
   formatBySize,
-  getStepSize
+  getStepSize,
+  getMaxLeverage
 } from "./helpers.js";
 import { changeInitialLeverageAPI, newOrderAPI } from "./api.js";
 import { nodeCache } from "./cache.js";
 
-export const changeInitialLeverage = async () => {
+export const changeToMaxLeverage = async () => {
   const symbol = nodeCache.get("symbol");
-  const totalParams = { symbol, leverage: LEVERAGE, timestamp: Date.now() };
+  const maxLeverage = await getMaxLeverage();
+  const totalParams = { symbol, leverage: maxLeverage, timestamp: Date.now() };
   await changeInitialLeverageAPI(totalParams);
-  await sendLineNotify(`Change Initial Leverage! ${symbol} ${LEVERAGE}`);
+  await sendLineNotify(`Change To Max Leverage! ${symbol} ${maxLeverage}`);
 };
 
 export const newOrder = async (totalParams) => {
-  const response = await newOrderAPI(totalParams);
-  const { symbol, side, origQty } = response;
-  await sendLineNotify(`New order! ${symbol} ${side} ${origQty}`);
-  return response;
+  await newOrderAPI(totalParams);
+  const { symbol, side, quantity } = totalParams;
+  await sendLineNotify(`New order! ${symbol} ${side} ${quantity}`);
 };
 
 export const openPosition = async () => {
   const symbol = nodeCache.get("symbol");
   const positionInformation = await getPositionInformation();
-  if (Number(positionInformation.leverage) !== LEVERAGE) {
-    await changeInitialLeverage();
+  const maxLeverage = await getMaxLeverage();
+  if (Number(positionInformation.leverage) !== maxLeverage) {
+    await changeToMaxLeverage();
   }
   const [orderQuantity, stepSize] = await Promise.all([
     getOrderQuantity(),
