@@ -5,8 +5,8 @@
     "node-schedule": "^2.1.1"
   },
   "scripts": {
-    "start:dev": "TZ=Asia/Taipei NODE_ENV=development node app",
-    "start:prod": "TZ=Asia/Taipei NODE_ENV=production node app",
+    "app:dev": "TZ=Asia/Taipei NODE_ENV=development node app",
+    "app:prod": "TZ=Asia/Taipei NODE_ENV=production node app",
     "test:dev": "TZ=Asia/Taipei NODE_ENV=development node test",
     "test:prod": "TZ=Asia/Taipei NODE_ENV=production node test"
   },
