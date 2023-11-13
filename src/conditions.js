@@ -1,4 +1,8 @@
-import { TRADING_RATIOS_PERIOD } from "../configs/trade-config.js";
+import {
+  TRADING_RATIOS_PERIOD,
+  TAKE_PROFIT_PERCENT,
+  STOP_LOSS_PERCENT
+} from "../configs/trade-config.js";
 import {
   topLongShortAccountRatioAPI,
   topLongShortPositionRatioAPI,
