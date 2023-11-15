@@ -129,8 +129,7 @@ export const getRandomSymbol = async () => {
 };
 
 export const getMarkPriceKlineData = async () => {
-  // const symbol = nodeCache.get("symbol");
-  const symbol = "BTCUSDT";
+  const symbol = nodeCache.get("symbol");
   const totalParams = { symbol, interval: KLINE_INTERVAL, limit: KLINE_LIMIT };
   const markPriceKlineData = await markPriceKlineDataAPI(totalParams);
   const openPrices = markPriceKlineData.map((kline) => Number(kline[1]));

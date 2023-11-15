@@ -1,0 +1,22 @@
+[
+  { "name": "sma", "trades": 2, "wins": 1 },
+  { "name": "ema", "trades": 2, "wins": 1 },
+  { "name": "wma", "trades": 2, "wins": 1 },
+  { "name": "wema", "trades": 2, "wins": 1 },
+  { "name": "macd", "trades": 2, "wins": 1 },
+  { "name": "rsi", "trades": 2, "wins": 1 },
+  { "name": "bollingerbands", "trades": 2, "wins": 1 },
+  { "name": "adx", "trades": 2, "wins": 1 },
+  { "name": "roc", "trades": 2, "wins": 1 },
+  { "name": "kst", "trades": 2, "wins": 1 },
+  { "name": "psar", "trades": 2, "wins": 1 },
+  { "name": "stochastic", "trades": 2, "wins": 1 },
+  { "name": "williamsr", "trades": 2, "wins": 1 },
+  { "name": "trix", "trades": 2, "wins": 1 },
+  { "name": "cci", "trades": 2, "wins": 1 },
+  { "name": "awesomeoscillator", "trades": 2, "wins": 1 },
+  { "name": "stochasticrsi", "trades": 2, "wins": 1 },
+  { "name": "ichimokucloud", "trades": 2, "wins": 1 },
+  { "name": "keltnerchannels", "trades": 2, "wins": 1 },
+  { "name": "chandelierexit", "trades": 2, "wins": 1 }
+]

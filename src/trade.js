@@ -8,6 +8,7 @@ import {
 } from "./helpers.js";
 import { changeInitialLeverageAPI, newOrderAPI } from "./api.js";
 import { nodeCache } from "./cache.js";
+import { addTradesInSignalsJson, addWinsInSignalsJson } from "./signals.js";
 
 export const changeToMaxLeverage = async () => {
   const symbol = nodeCache.get("symbol");
@@ -24,12 +25,15 @@ export const newOrder = async (totalParams) => {
 };
 
 export const openPosition = async () => {
-  const symbol = nodeCache.get("symbol");
-  const positionInformation = await getPositionInformation();
-  const maxLeverage = await getMaxLeverage();
+  await addTradesInSignalsJson();
+  const [positionInformation, maxLeverage] = await Promise.all([
+    getPositionInformation(),
+    getMaxLeverage()
+  ]);
   if (Number(positionInformation.leverage) !== maxLeverage) {
     await changeToMaxLeverage();
   }
+  const symbol = nodeCache.get("symbol");
   const [orderQuantity, stepSize] = await Promise.all([
     getOrderQuantity(),
     getStepSize()
@@ -45,10 +49,13 @@ export const openPosition = async () => {
 };
 
 export const closePosition = async () => {
-  const symbol = nodeCache.get("symbol");
   const positionInformation = await getPositionInformation();
-  const { positionAmt } = positionInformation;
+  const { positionAmt, unRealizedProfit } = positionInformation;
   if (positionAmt > 0) {
+    if (unRealizedProfit > 0) {
+      await addWinsInSignalsJson();
+    }
+    const symbol = nodeCache.get("symbol");
     await newOrder({
       symbol,
       side: "SELL",
