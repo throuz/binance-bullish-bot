@@ -11,6 +11,7 @@ import {
 import { nodeCache } from "./cache.js";
 import { hexagrams, getRandomSixyao } from "./yi-jing.js";
 import { getPNLPercent } from "./helpers.js";
+import { getSignal } from "./signals.js";
 
 // Open conditions
 
@@ -36,7 +37,8 @@ export const getIsHexagramIndicateInvestmentPossible = () => {
 export const getIsOpenConditionsMet = async () => {
   const results = await Promise.all([
     getIsAllTradingRatiosBullish(),
-    getIsHexagramIndicateInvestmentPossible
+    getIsHexagramIndicateInvestmentPossible(),
+    getSignal()
   ]);
   return results.every((result) => result);
 };
