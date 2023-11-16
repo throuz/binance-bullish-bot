@@ -310,9 +310,10 @@ export const getFalseSignals = async () => {
   return falseSignals;
 };
 
+export const signalsJsonPath = new URL("../signals.json", import.meta.url);
+
 export const readSignalsJson = async () => {
-  const filePath = new URL("../signals.json", import.meta.url);
-  const contents = await readFile(filePath, { encoding: "utf8" });
+  const contents = await readFile(signalsJsonPath, { encoding: "utf8" });
   const parsedContents = JSON.parse(contents);
   return parsedContents;
 };
@@ -326,7 +327,7 @@ export const addTradesInSignalsJson = async () => {
     const foundIndex = signalsJsonData.findIndex((item) => item.name === name);
     signalsJsonData[foundIndex].trades++;
   }
-  await writeFile("../signals.json", JSON.stringify(signalsJsonData));
+  await writeFile(signalsJsonPath, JSON.stringify(signalsJsonData));
 };
 
 export const addWinsInSignalsJson = async () => {
@@ -339,7 +340,7 @@ export const addWinsInSignalsJson = async () => {
       );
       signalsJsonData[foundIndex].wins++;
     }
-    await writeFile("../signals.json", JSON.stringify(signalsJsonData));
+    await writeFile(signalsJsonPath, JSON.stringify(signalsJsonData));
   }
 };
 
