@@ -271,30 +271,31 @@ export const chandelierexitSignal = async () => {
   };
 };
 
-export const signalPromiseArray = [
-  // smaSignal(),
-  // emaSignal(),
-  // wmaSignal(),
-  // wemaSignal(),
-  // macdSignal(),
-  rsiSignal(),
-  bollingerbandsSignal(),
-  // adxSignal(),
-  // rocSignal(),
-  // kstSignal(),
-  psarSignal(),
-  // stochasticSignal(),
-  // williamsrSignal(),
-  // trixSignal(),
-  cciSignal(),
-  // awesomeoscillatorSignal(),
-  stochasticrsiSignal(),
-  // ichimokucloudSignal(),
-  keltnerchannelsSignal()
-  // chandelierexitSignal()
+export const signalFunctionArray = [
+  // smaSignal,
+  // emaSignal,
+  // wmaSignal,
+  // wemaSignal,
+  // macdSignal,
+  rsiSignal,
+  bollingerbandsSignal,
+  // adxSignal,
+  // rocSignal,
+  // kstSignal,
+  psarSignal,
+  // stochasticSignal,
+  // williamsrSignal,
+  // trixSignal,
+  cciSignal,
+  // awesomeoscillatorSignal,
+  stochasticrsiSignal,
+  // ichimokucloudSignal,
+  keltnerchannelsSignal
+  // chandelierexitSignal
 ];
 
 export const getSignals = async () => {
+  const signalPromiseArray = signalFunctionArray.map((func) => func());
   const signals = await Promise.all(signalPromiseArray);
   return signals;
 };
@@ -354,6 +355,6 @@ export const getSignal = async () => {
   );
   const scores = filteredSignalsJsonData.map((item) => item.wins / item.trades);
   const totalScore = scores.reduce((partialSum, a) => partialSum + a, 0);
-  const fullScore = signalPromiseArray.length * 0.5;
+  const fullScore = signalFunctionArray.length * 0.5;
   return totalScore / fullScore > 0.5;
 };
