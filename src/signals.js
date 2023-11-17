@@ -1,28 +1,28 @@
+import { readFile, writeFile } from "node:fs/promises";
 import {
-  sma,
-  ema,
-  wma,
-  wema,
-  macd,
-  rsi,
-  bollingerbands,
   adx,
-  roc,
-  kst,
-  psar,
-  stochastic,
-  williamsr,
-  trix,
-  cci,
   awesomeoscillator,
-  stochasticrsi,
+  bollingerbands,
+  cci,
+  chandelierexit,
+  ema,
   ichimokucloud,
   keltnerchannels,
-  chandelierexit
+  kst,
+  macd,
+  psar,
+  roc,
+  rsi,
+  sma,
+  stochastic,
+  stochasticrsi,
+  trix,
+  wema,
+  williamsr,
+  wma
 } from "technicalindicators";
-import { getMarkPriceKlineData } from "./helpers.js";
-import { readFile, writeFile } from "node:fs/promises";
 import { nodeCache } from "./cache.js";
+import { getMarkPriceKlineData } from "./helpers.js";
 
 export const smaSignal = async () => {
   const { closePrices } = await getMarkPriceKlineData();
@@ -271,30 +271,31 @@ export const chandelierexitSignal = async () => {
   };
 };
 
+export const signalPromiseArray = [
+  // smaSignal(),
+  // emaSignal(),
+  // wmaSignal(),
+  // wemaSignal(),
+  // macdSignal(),
+  rsiSignal(),
+  bollingerbandsSignal(),
+  // adxSignal(),
+  // rocSignal(),
+  // kstSignal(),
+  psarSignal(),
+  // stochasticSignal(),
+  // williamsrSignal(),
+  // trixSignal(),
+  cciSignal(),
+  // awesomeoscillatorSignal(),
+  stochasticrsiSignal(),
+  // ichimokucloudSignal(),
+  keltnerchannelsSignal()
+  // chandelierexitSignal()
+];
+
 export const getSignals = async () => {
-  const promiseArray = [
-    smaSignal(),
-    emaSignal(),
-    wmaSignal(),
-    wemaSignal(),
-    macdSignal(),
-    rsiSignal(),
-    bollingerbandsSignal(),
-    adxSignal(),
-    rocSignal(),
-    kstSignal(),
-    psarSignal(),
-    stochasticSignal(),
-    williamsrSignal(),
-    trixSignal(),
-    cciSignal(),
-    awesomeoscillatorSignal(),
-    stochasticrsiSignal(),
-    ichimokucloudSignal(),
-    keltnerchannelsSignal(),
-    chandelierexitSignal()
-  ];
-  const signals = await Promise.all(promiseArray);
+  const signals = await Promise.all(signalPromiseArray);
   return signals;
 };
 
@@ -351,9 +352,8 @@ export const getSignal = async () => {
   const filteredSignalsJsonData = signalsJsonData.filter((item) =>
     trueSignalNames.includes(item.name)
   );
-  const winRates = filteredSignalsJsonData.map(
-    (item) => item.wins / item.trades
-  );
-  const winRatesSum = winRates.reduce((partialSum, a) => partialSum + a, 0);
-  return winRatesSum > signalsJsonData.length / 2 / 2;
+  const scores = filteredSignalsJsonData.map((item) => item.wins / item.trades);
+  const totalScore = scores.reduce((partialSum, a) => partialSum + a, 0);
+  const fullScore = signalPromiseArray.length * 0.5;
+  return totalScore / fullScore > 0.5;
 };

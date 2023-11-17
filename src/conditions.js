@@ -1,19 +1,25 @@
 import {
-  TRADING_RATIOS_PERIOD,
+  MINIMUM_LEVERAGE,
+  STOP_LOSS_PERCENT,
   TAKE_PROFIT_PERCENT,
-  STOP_LOSS_PERCENT
+  TRADING_RATIOS_PERIOD
 } from "../configs/trade-config.js";
 import {
+  globalLongShortAccountRatioAPI,
   topLongShortAccountRatioAPI,
-  topLongShortPositionRatioAPI,
-  globalLongShortAccountRatioAPI
+  topLongShortPositionRatioAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
-import { hexagrams, getRandomSixyao } from "./yi-jing.js";
-import { getPNLPercent } from "./helpers.js";
+import { getMaxLeverage, getPNLPercent } from "./helpers.js";
 import { getSignal } from "./signals.js";
+import { getRandomSixyao, hexagrams } from "./yi-jing.js";
 
 // Open conditions
+
+export const getIsMaxLeverageEnough = async () => {
+  const maxLeverage = await getMaxLeverage();
+  return maxLeverage >= MINIMUM_LEVERAGE;
+};
 
 export const getIsAllTradingRatiosBullish = async () => {
   const symbol = nodeCache.get("symbol");
@@ -36,6 +42,7 @@ export const getIsHexagramIndicateInvestmentPossible = () => {
 
 export const getIsOpenConditionsMet = async () => {
   const results = await Promise.all([
+    getIsMaxLeverageEnough(),
     getIsAllTradingRatiosBullish(),
     getIsHexagramIndicateInvestmentPossible(),
     getSignal()

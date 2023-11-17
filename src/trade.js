@@ -1,13 +1,13 @@
-import { sendLineNotify } from "./common.js";
-import {
-  getPositionInformation,
-  getOrderQuantity,
-  formatBySize,
-  getStepSize,
-  getMaxLeverage
-} from "./helpers.js";
 import { changeInitialLeverageAPI, newOrderAPI } from "./api.js";
 import { nodeCache } from "./cache.js";
+import { sendLineNotify } from "./common.js";
+import {
+  formatBySize,
+  getMaxLeverage,
+  getOrderQuantity,
+  getPositionInformation,
+  getStepSize
+} from "./helpers.js";
 import { addTradesInSignalsJson, addWinsInSignalsJson } from "./signals.js";
 
 export const changeToMaxLeverage = async () => {

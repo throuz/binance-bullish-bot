@@ -1,8 +1,8 @@
 import crypto from "node:crypto";
 import querystring from "node:querystring";
 import { SECRET_KEY } from "../configs/env-config.js";
-import { binanceFuturesAPI } from "./web-services.js";
 import { nodeCache } from "./cache.js";
+import { binanceFuturesAPI } from "./web-services.js";
 
 export const getSignature = (totalParams) => {
   const queryString = querystring.stringify(totalParams);
