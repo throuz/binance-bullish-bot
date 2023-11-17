@@ -30,7 +30,8 @@ export const smaSignal = async () => {
   const longTermResults = sma({ period: 200, values: closePrices });
   const lastShortTermResult = shortTermResults[shortTermResults.length - 1];
   const lastLongTermResult = longTermResults[longTermResults.length - 1];
-  return { name: "sma", signal: lastShortTermResult > lastLongTermResult };
+  return { name: "sma", signal: lastShortTermResult < lastLongTermResult };
+  // return { name: "sma", signal: lastShortTermResult > lastLongTermResult };
 };
 
 export const emaSignal = async () => {
@@ -39,7 +40,8 @@ export const emaSignal = async () => {
   const longTermResults = ema({ period: 200, values: closePrices });
   const lastShortTermResult = shortTermResults[shortTermResults.length - 1];
   const lastLongTermResult = longTermResults[longTermResults.length - 1];
-  return { name: "ema", signal: lastShortTermResult > lastLongTermResult };
+  return { name: "ema", signal: lastShortTermResult < lastLongTermResult };
+  // return { name: "ema", signal: lastShortTermResult > lastLongTermResult };
 };
 
 export const wmaSignal = async () => {
@@ -48,7 +50,8 @@ export const wmaSignal = async () => {
   const longTermResults = wma({ period: 200, values: closePrices });
   const lastShortTermResult = shortTermResults[shortTermResults.length - 1];
   const lastLongTermResult = longTermResults[longTermResults.length - 1];
-  return { name: "wma", signal: lastShortTermResult > lastLongTermResult };
+  return { name: "wma", signal: lastShortTermResult < lastLongTermResult };
+  // return { name: "wma", signal: lastShortTermResult > lastLongTermResult };
 };
 
 export const wemaSignal = async () => {
@@ -57,7 +60,8 @@ export const wemaSignal = async () => {
   const longTermResults = wema({ period: 200, values: closePrices });
   const lastShortTermResult = shortTermResults[shortTermResults.length - 1];
   const lastLongTermResult = longTermResults[longTermResults.length - 1];
-  return { name: "wema", signal: lastShortTermResult > lastLongTermResult };
+  return { name: "wema", signal: lastShortTermResult < lastLongTermResult };
+  // return { name: "wema", signal: lastShortTermResult > lastLongTermResult };
 };
 
 export const macdSignal = async () => {
@@ -71,14 +75,16 @@ export const macdSignal = async () => {
     signalPeriod: 9
   });
   const lastResult = results[results.length - 1];
-  return { name: "macd", signal: lastResult.histogram > 0 };
+  return { name: "macd", signal: lastResult.histogram < 0 };
+  // return { name: "macd", signal: lastResult.histogram > 0 };
 };
 
 export const rsiSignal = async () => {
   const { closePrices } = await getMarkPriceKlineData();
   const results = rsi({ period: 14, values: closePrices });
   const lastResult = results[results.length - 1];
-  return { name: "rsi", signal: lastResult < 30 };
+  return { name: "rsi", signal: lastResult > 70 };
+  // return { name: "rsi", signal: lastResult < 30 };
 };
 
 export const bollingerbandsSignal = async () => {
@@ -89,7 +95,8 @@ export const bollingerbandsSignal = async () => {
     values: closePrices
   });
   const lastResult = results[results.length - 1];
-  return { name: "bollingerbands", signal: lastResult.pb < 0 };
+  return { name: "bollingerbands", signal: lastResult.pb > 0 };
+  // return { name: "bollingerbands", signal: lastResult.pb < 0 };
 };
 
 export const adxSignal = async () => {
@@ -101,14 +108,16 @@ export const adxSignal = async () => {
     period: 14
   });
   const lastResult = results[results.length - 1];
-  return { name: "adx", signal: lastResult.pdi > lastResult.mdi };
+  return { name: "adx", signal: lastResult.pdi < lastResult.mdi };
+  // return { name: "adx", signal: lastResult.pdi > lastResult.mdi };
 };
 
 export const rocSignal = async () => {
   const { closePrices } = await getMarkPriceKlineData();
   const results = roc({ period: 9, values: closePrices });
   const lastResult = results[results.length - 1];
-  return { name: "roc", signal: lastResult > 0 };
+  return { name: "roc", signal: lastResult < 0 };
+  // return { name: "roc", signal: lastResult > 0 };
 };
 
 export const kstSignal = async () => {
@@ -126,7 +135,8 @@ export const kstSignal = async () => {
     values: closePrices
   });
   const lastResult = results[results.length - 1];
-  return { name: "kst", signal: lastResult.kst > lastResult.signal };
+  return { name: "kst", signal: lastResult.kst < lastResult.signal };
+  // return { name: "kst", signal: lastResult.kst > lastResult.signal };
 };
 
 export const psarSignal = async () => {
@@ -139,7 +149,8 @@ export const psarSignal = async () => {
   });
   const lastResult = results[results.length - 1];
   const lastclosePrice = closePrices[closePrices.length - 1];
-  return { name: "psar", signal: lastResult > lastclosePrice };
+  return { name: "psar", signal: lastResult < lastclosePrice };
+  // return { name: "psar", signal: lastResult > lastclosePrice };
 };
 
 export const stochasticSignal = async () => {
@@ -152,7 +163,8 @@ export const stochasticSignal = async () => {
     signalPeriod: 3
   });
   const lastResult = results[results.length - 1];
-  return { name: "stochastic", signal: lastResult.k > lastResult.d };
+  return { name: "stochastic", signal: lastResult.k < lastResult.d };
+  // return { name: "stochastic", signal: lastResult.k > lastResult.d };
 };
 
 export const williamsrSignal = async () => {
@@ -164,14 +176,16 @@ export const williamsrSignal = async () => {
     period: 14
   });
   const lastResult = results[results.length - 1];
-  return { name: "williamsr", signal: lastResult < 20 };
+  return { name: "williamsr", signal: lastResult > 80 };
+  // return { name: "williamsr", signal: lastResult < 20 };
 };
 
 export const trixSignal = async () => {
   const { closePrices } = await getMarkPriceKlineData();
   const results = trix({ values: closePrices, period: 15 });
   const lastResult = results[results.length - 1];
-  return { name: "trix", signal: lastResult > 0 };
+  return { name: "trix", signal: lastResult < 0 };
+  // return { name: "trix", signal: lastResult > 0 };
 };
 
 export const cciSignal = async () => {
@@ -185,8 +199,10 @@ export const cciSignal = async () => {
   const lastResult = results[results.length - 1];
   const maxCci = Math.max(...results);
   const minCci = Math.min(...results);
-  const signalCci = (maxCci - minCci) * 0.2 + minCci;
-  return { name: "cci", signal: lastResult < signalCci };
+  const signalCci = (maxCci - minCci) * 0.8 + minCci;
+  return { name: "cci", signal: lastResult > signalCci };
+  // const signalCci = (maxCci - minCci) * 0.2 + minCci;
+  // return { name: "cci", signal: lastResult < signalCci };
 };
 
 export const awesomeoscillatorSignal = async () => {
@@ -198,7 +214,8 @@ export const awesomeoscillatorSignal = async () => {
     slowPeriod: 34
   });
   const lastResult = results[results.length - 1];
-  return { name: "awesomeoscillator", signal: lastResult > 0 };
+  return { name: "awesomeoscillator", signal: lastResult < 0 };
+  // return { name: "awesomeoscillator", signal: lastResult > 0 };
 };
 
 export const stochasticrsiSignal = async () => {
@@ -212,7 +229,8 @@ export const stochasticrsiSignal = async () => {
   });
   const lastResult = results[results.length - 1];
   const { stochRSI, k, d } = lastResult;
-  return { name: "stochasticrsi", signal: stochRSI < 20 && k > d };
+  return { name: "stochasticrsi", signal: stochRSI < 80 && k < d };
+  // return { name: "stochasticrsi", signal: stochRSI < 20 && k > d };
 };
 
 export const ichimokucloudSignal = async () => {
@@ -231,11 +249,19 @@ export const ichimokucloudSignal = async () => {
   return {
     name: "ichimokucloud",
     signal:
-      lastclosePrice > conversion &&
-      lastclosePrice > base &&
-      lastclosePrice > spanA &&
-      lastclosePrice > spanB
+      lastclosePrice < conversion &&
+      lastclosePrice < base &&
+      lastclosePrice < spanA &&
+      lastclosePrice < spanB
   };
+  // return {
+  //   name: "ichimokucloud",
+  //   signal:
+  //     lastclosePrice > conversion &&
+  //     lastclosePrice > base &&
+  //     lastclosePrice > spanA &&
+  //     lastclosePrice > spanB
+  // };
 };
 
 export const keltnerchannelsSignal = async () => {
@@ -251,7 +277,8 @@ export const keltnerchannelsSignal = async () => {
   });
   const lastResult = results[results.length - 1];
   const lastclosePrice = closePrices[closePrices.length - 1];
-  return { name: "keltnerchannels", signal: lastclosePrice > lastResult.upper };
+  return { name: "keltnerchannels", signal: lastclosePrice < lastResult.lower };
+  // return { name: "keltnerchannels", signal: lastclosePrice > lastResult.upper };
 };
 
 export const chandelierexitSignal = async () => {
@@ -267,31 +294,35 @@ export const chandelierexitSignal = async () => {
   const lastclosePrice = closePrices[closePrices.length - 1];
   return {
     name: "chandelierexit",
-    signal: lastclosePrice > lastResult.exitLong
+    signal: lastclosePrice < lastResult.exitShort
   };
+  // return {
+  //   name: "chandelierexit",
+  //   signal: lastclosePrice > lastResult.exitLong
+  // };
 };
 
 export const signalFunctionArray = [
-  // smaSignal,
-  // emaSignal,
-  // wmaSignal,
-  // wemaSignal,
-  // macdSignal,
+  smaSignal,
+  emaSignal,
+  wmaSignal,
+  wemaSignal,
+  macdSignal,
   rsiSignal,
-  // bollingerbandsSignal,
-  // adxSignal,
-  // rocSignal,
-  // kstSignal,
-  // psarSignal,
-  // stochasticSignal,
-  // williamsrSignal,
-  // trixSignal,
-  // cciSignal,
-  // awesomeoscillatorSignal,
-  // stochasticrsiSignal,
-  // ichimokucloudSignal,
-  keltnerchannelsSignal
-  // chandelierexitSignal
+  bollingerbandsSignal,
+  adxSignal,
+  rocSignal,
+  kstSignal,
+  psarSignal,
+  stochasticSignal,
+  williamsrSignal,
+  trixSignal,
+  cciSignal,
+  awesomeoscillatorSignal,
+  stochasticrsiSignal,
+  ichimokucloudSignal,
+  keltnerchannelsSignal,
+  chandelierexitSignal
 ];
 
 export const getSignals = async () => {
