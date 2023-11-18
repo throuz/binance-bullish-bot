@@ -98,8 +98,7 @@ export const adxSignal = async () => {
     period: 14
   });
   const lastResult = results[results.length - 1];
-  const { adx, pdi } = lastResult;
-  return { name: "adx", signal: adx > 50 && pdi < 5 };
+  return { name: "adx", signal: lastResult.adx > 50 && lastResult.pdi < 5 };
 };
 
 export const rocSignal = async () => {
@@ -124,8 +123,13 @@ export const kstSignal = async () => {
     values: closePrices
   });
   const lastResult = results[results.length - 1];
-  const { kst, signal } = lastResult;
-  return { name: "kst", signal: kst < 0 && signal < 0 && kst > signal };
+  return {
+    name: "kst",
+    signal:
+      lastResult.kst < 0 &&
+      lastResult.signal < 0 &&
+      lastResult.kst > lastResult.signal
+  };
 };
 
 export const psarSignal = async () => {
