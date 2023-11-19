@@ -57,7 +57,7 @@ export const wemaSignal = async () => {
 };
 
 export const macdSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData();
+  const { closePrices } = await getMarkPriceKlineData("1h");
   const results = macd({
     values: closePrices,
     SimpleMAOscillator: true,
@@ -67,8 +67,16 @@ export const macdSignal = async () => {
     signalPeriod: 9
   });
   const lastResult = results[results.length - 1];
+  const secondlLastResult = results[results.length - 2];
   const { MACD, signal, histogram } = lastResult;
-  return { name: "macd", signal: MACD < 0 && signal < 0 && histogram > 0 };
+  return {
+    name: "macd",
+    signal:
+      MACD < 0 &&
+      signal < 0 &&
+      histogram > 0 &&
+      histogram > secondlLastResult.histogram
+  };
 };
 
 export const rsiSignal = async () => {
@@ -90,7 +98,9 @@ export const bollingerbandsSignal = async () => {
 };
 
 export const adxSignal = async () => {
-  const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData();
+  const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData(
+    "1h"
+  );
   const results = adx({
     high: highPrices,
     low: lowPrices,
@@ -98,18 +108,25 @@ export const adxSignal = async () => {
     period: 14
   });
   const lastResult = results[results.length - 1];
-  return { name: "adx", signal: lastResult.adx > 50 && lastResult.pdi < 5 };
+  return {
+    name: "adx",
+    signal: lastResult.pdi > lastResult.mdi && lastResult.adx > 40
+  };
 };
 
 export const rocSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData();
+  const { closePrices } = await getMarkPriceKlineData("1h");
   const results = roc({ period: 9, values: closePrices });
   const lastResult = results[results.length - 1];
-  return { name: "roc", signal: lastResult > 0 };
+  const secondLastResult = results[results.length - 2];
+  return {
+    name: "roc",
+    signal: lastResult > 0 && lastResult > secondLastResult
+  };
 };
 
 export const kstSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData();
+  const { closePrices } = await getMarkPriceKlineData("1h");
   const results = kst({
     ROCPer1: 10,
     ROCPer2: 15,
@@ -123,17 +140,22 @@ export const kstSignal = async () => {
     values: closePrices
   });
   const lastResult = results[results.length - 1];
+  const secondLastResult = results[results.length - 2];
   return {
     name: "kst",
     signal:
       lastResult.kst < 0 &&
       lastResult.signal < 0 &&
-      lastResult.kst > lastResult.signal
+      lastResult.kst > lastResult.signal &&
+      lastResult.kst > secondLastResult.kst &&
+      lastResult.signal > secondLastResult.signal
   };
 };
 
 export const psarSignal = async () => {
-  const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData();
+  const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData(
+    "1h"
+  );
   const results = psar({
     step: 0.02,
     max: 0.2,
@@ -142,11 +164,13 @@ export const psarSignal = async () => {
   });
   const lastResult = results[results.length - 1];
   const lastclosePrice = closePrices[closePrices.length - 1];
-  return { name: "psar", signal: lastResult > lastclosePrice };
+  return { name: "psar", signal: lastclosePrice > lastResult };
 };
 
 export const stochasticSignal = async () => {
-  const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData();
+  const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData(
+    "1h"
+  );
   const results = stochastic({
     period: 14,
     low: lowPrices,
@@ -156,11 +180,16 @@ export const stochasticSignal = async () => {
   });
   const lastResult = results[results.length - 1];
   const { k, d } = lastResult;
-  return { name: "stochastic", signal: k > 50 && d > 50 && k > d };
+  return {
+    name: "stochastic",
+    signal: k > 50 && d > 50 && k < 80 && d < 80 && k > d
+  };
 };
 
 export const williamsrSignal = async () => {
-  const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData();
+  const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData(
+    "1h"
+  );
   const results = williamsr({
     low: lowPrices,
     high: highPrices,
@@ -168,11 +197,15 @@ export const williamsrSignal = async () => {
     period: 14
   });
   const lastResult = results[results.length - 1];
-  return { name: "williamsr", signal: lastResult > -50 };
+  const secondLastResult = results[results.length - 2];
+  return {
+    name: "williamsr",
+    signal: lastResult > -50 && lastResult > secondLastResult
+  };
 };
 
 export const trixSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData();
+  const { closePrices } = await getMarkPriceKlineData("1h");
   const results = trix({ values: closePrices, period: 18 });
   const lastResult = results[results.length - 1];
   const secondLastResult = results[results.length - 2];
@@ -196,7 +229,7 @@ export const cciSignal = async () => {
 };
 
 export const awesomeoscillatorSignal = async () => {
-  const { highPrices, lowPrices } = await getMarkPriceKlineData();
+  const { highPrices, lowPrices } = await getMarkPriceKlineData("1h");
   const results = awesomeoscillator({
     high: highPrices,
     low: lowPrices,
@@ -213,7 +246,7 @@ export const awesomeoscillatorSignal = async () => {
 };
 
 export const stochasticrsiSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData();
+  const { closePrices } = await getMarkPriceKlineData("1h");
   const results = stochasticrsi({
     values: closePrices,
     rsiPeriod: 14,
@@ -222,10 +255,18 @@ export const stochasticrsiSignal = async () => {
     dPeriod: 3
   });
   const lastResult = results[results.length - 1];
-  const { stochRSI, k, d } = lastResult;
+  const { k, d } = lastResult;
+  const secondLastResult = results[results.length - 2];
   return {
     name: "stochasticrsi",
-    signal: stochRSI > 20 && k > 20 && d > 20 && k > d
+    signal:
+      k > 20 &&
+      d > 20 &&
+      k < 80 &&
+      d < 80 &&
+      k > d &&
+      k > secondLastResult.k &&
+      d > secondLastResult.d
   };
 };
 
