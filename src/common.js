@@ -27,6 +27,10 @@ export const stringifySafe = (obj) => {
 };
 
 export const errorHandler = async (error) => {
+  if (error.response.data.code === -1021) {
+    await sendLineNotify(error.response.data.msg);
+    return;
+  }
   if (error.response) {
     const { data, status } = error.response;
     await sendLineNotify("Response status code is outside the 2xx range");

@@ -25,35 +25,59 @@ import { nodeCache } from "./cache.js";
 import { getMarkPriceKlineData } from "./helpers.js";
 
 export const smaSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData();
+  const { closePrices } = await getMarkPriceKlineData("1h");
   const results = sma({ period: 7, values: closePrices });
   const lastResult = results[results.length - 1];
+  const secondLastResult = results[results.length - 2];
   const lastClosePrice = closePrices[closePrices.length - 1];
-  return { name: "sma", signal: lastResult > lastClosePrice };
+  const sencondLastClosePrice = closePrices[closePrices.length - 2];
+  return {
+    name: "sma",
+    signal:
+      sencondLastClosePrice < secondLastResult && lastClosePrice > lastResult
+  };
 };
 
 export const emaSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData();
+  const { closePrices } = await getMarkPriceKlineData("1h");
   const results = ema({ period: 9, values: closePrices });
   const lastResult = results[results.length - 1];
+  const secondLastResult = results[results.length - 2];
   const lastClosePrice = closePrices[closePrices.length - 1];
-  return { name: "ema", signal: lastResult > lastClosePrice };
+  const sencondLastClosePrice = closePrices[closePrices.length - 2];
+  return {
+    name: "ema",
+    signal:
+      sencondLastClosePrice < secondLastResult && lastClosePrice > lastResult
+  };
 };
 
 export const wmaSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData();
+  const { closePrices } = await getMarkPriceKlineData("1h");
   const results = wma({ period: 9, values: closePrices });
   const lastResult = results[results.length - 1];
+  const secondLastResult = results[results.length - 2];
   const lastClosePrice = closePrices[closePrices.length - 1];
-  return { name: "wma", signal: lastResult > lastClosePrice };
+  const sencondLastClosePrice = closePrices[closePrices.length - 2];
+  return {
+    name: "wma",
+    signal:
+      sencondLastClosePrice < secondLastResult && lastClosePrice > lastResult
+  };
 };
 
 export const wemaSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData();
+  const { closePrices } = await getMarkPriceKlineData("1h");
   const results = wema({ period: 9, values: closePrices });
   const lastResult = results[results.length - 1];
+  const secondLastResult = results[results.length - 2];
   const lastClosePrice = closePrices[closePrices.length - 1];
-  return { name: "wema", signal: lastResult > lastClosePrice };
+  const sencondLastClosePrice = closePrices[closePrices.length - 2];
+  return {
+    name: "wema",
+    signal:
+      sencondLastClosePrice < secondLastResult && lastClosePrice > lastResult
+  };
 };
 
 export const macdSignal = async () => {
@@ -121,7 +145,7 @@ export const rocSignal = async () => {
   const secondLastResult = results[results.length - 2];
   return {
     name: "roc",
-    signal: lastResult > 0 && lastResult > secondLastResult
+    signal: lastResult < -3 && lastResult > secondLastResult
   };
 };
 
@@ -179,11 +203,7 @@ export const stochasticSignal = async () => {
     signalPeriod: 3
   });
   const lastResult = results[results.length - 1];
-  const { k, d } = lastResult;
-  return {
-    name: "stochastic",
-    signal: k > 50 && d > 50 && k < 80 && d < 80 && k > d
-  };
+  return { name: "stochastic", signal: lastResult.k > 95 };
 };
 
 export const williamsrSignal = async () => {
@@ -197,11 +217,7 @@ export const williamsrSignal = async () => {
     period: 14
   });
   const lastResult = results[results.length - 1];
-  const secondLastResult = results[results.length - 2];
-  return {
-    name: "williamsr",
-    signal: lastResult > -50 && lastResult > secondLastResult
-  };
+  return { name: "williamsr", signal: lastResult < -5 };
 };
 
 export const trixSignal = async () => {
@@ -240,8 +256,7 @@ export const awesomeoscillatorSignal = async () => {
   const secondLastResult = results[results.length - 2];
   return {
     name: "awesomeoscillator",
-    signal:
-      lastResult < 0 && secondLastResult < 0 && lastResult > secondLastResult
+    signal: secondLastResult < 0 && lastResult > 0
   };
 };
 
@@ -255,19 +270,7 @@ export const stochasticrsiSignal = async () => {
     dPeriod: 3
   });
   const lastResult = results[results.length - 1];
-  const { k, d } = lastResult;
-  const secondLastResult = results[results.length - 2];
-  return {
-    name: "stochasticrsi",
-    signal:
-      k > 20 &&
-      d > 20 &&
-      k < 80 &&
-      d < 80 &&
-      k > d &&
-      k > secondLastResult.k &&
-      d > secondLastResult.d
-  };
+  return { name: "stochasticrsi", signal: lastResult.k > 95 };
 };
 
 export const ichimokucloudSignal = async () => {
