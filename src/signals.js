@@ -25,7 +25,7 @@ import { nodeCache } from "./cache.js";
 import { getMarkPriceKlineData } from "./helpers.js";
 
 export const smaSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData("1h");
+  const { closePrices } = await getMarkPriceKlineData("1d");
   const results = sma({ period: 7, values: closePrices });
   const lastResult = results[results.length - 1];
   const secondLastResult = results[results.length - 2];
@@ -39,7 +39,7 @@ export const smaSignal = async () => {
 };
 
 export const emaSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData("1h");
+  const { closePrices } = await getMarkPriceKlineData("1d");
   const results = ema({ period: 9, values: closePrices });
   const lastResult = results[results.length - 1];
   const secondLastResult = results[results.length - 2];
@@ -53,7 +53,7 @@ export const emaSignal = async () => {
 };
 
 export const wmaSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData("1h");
+  const { closePrices } = await getMarkPriceKlineData("1d");
   const results = wma({ period: 9, values: closePrices });
   const lastResult = results[results.length - 1];
   const secondLastResult = results[results.length - 2];
@@ -67,7 +67,7 @@ export const wmaSignal = async () => {
 };
 
 export const wemaSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData("1h");
+  const { closePrices } = await getMarkPriceKlineData("1d");
   const results = wema({ period: 9, values: closePrices });
   const lastResult = results[results.length - 1];
   const secondLastResult = results[results.length - 2];
@@ -81,7 +81,7 @@ export const wemaSignal = async () => {
 };
 
 export const macdSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData("1h");
+  const { closePrices } = await getMarkPriceKlineData("1d");
   const results = macd({
     values: closePrices,
     SimpleMAOscillator: true,
@@ -104,14 +104,14 @@ export const macdSignal = async () => {
 };
 
 export const rsiSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData();
+  const { closePrices } = await getMarkPriceKlineData("1h");
   const results = rsi({ period: 14, values: closePrices });
   const lastResult = results[results.length - 1];
   return { name: "rsi", signal: lastResult > 50 };
 };
 
 export const bollingerbandsSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData();
+  const { closePrices } = await getMarkPriceKlineData("1h");
   const results = bollingerbands({
     period: 20,
     stdDev: 2,
@@ -123,7 +123,7 @@ export const bollingerbandsSignal = async () => {
 
 export const adxSignal = async () => {
   const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData(
-    "1h"
+    "1d"
   );
   const results = adx({
     high: highPrices,
@@ -139,7 +139,7 @@ export const adxSignal = async () => {
 };
 
 export const rocSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData("1h");
+  const { closePrices } = await getMarkPriceKlineData("1d");
   const results = roc({ period: 9, values: closePrices });
   const lastResult = results[results.length - 1];
   const secondLastResult = results[results.length - 2];
@@ -150,7 +150,7 @@ export const rocSignal = async () => {
 };
 
 export const kstSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData("1h");
+  const { closePrices } = await getMarkPriceKlineData("1d");
   const results = kst({
     ROCPer1: 10,
     ROCPer2: 15,
@@ -178,7 +178,7 @@ export const kstSignal = async () => {
 
 export const psarSignal = async () => {
   const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData(
-    "1h"
+    "1d"
   );
   const results = psar({
     step: 0.02,
@@ -193,7 +193,7 @@ export const psarSignal = async () => {
 
 export const stochasticSignal = async () => {
   const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData(
-    "1h"
+    "1d"
   );
   const results = stochastic({
     period: 14,
@@ -208,7 +208,7 @@ export const stochasticSignal = async () => {
 
 export const williamsrSignal = async () => {
   const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData(
-    "1h"
+    "1d"
   );
   const results = williamsr({
     low: lowPrices,
@@ -221,7 +221,7 @@ export const williamsrSignal = async () => {
 };
 
 export const trixSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData("1h");
+  const { closePrices } = await getMarkPriceKlineData("1d");
   const results = trix({ values: closePrices, period: 18 });
   const lastResult = results[results.length - 1];
   const secondLastResult = results[results.length - 2];
@@ -233,7 +233,9 @@ export const trixSignal = async () => {
 };
 
 export const cciSignal = async () => {
-  const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData();
+  const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData(
+    "1h"
+  );
   const results = cci({
     high: highPrices,
     low: lowPrices,
@@ -245,7 +247,7 @@ export const cciSignal = async () => {
 };
 
 export const awesomeoscillatorSignal = async () => {
-  const { highPrices, lowPrices } = await getMarkPriceKlineData("1h");
+  const { highPrices, lowPrices } = await getMarkPriceKlineData("1d");
   const results = awesomeoscillator({
     high: highPrices,
     low: lowPrices,
@@ -261,7 +263,7 @@ export const awesomeoscillatorSignal = async () => {
 };
 
 export const stochasticrsiSignal = async () => {
-  const { closePrices } = await getMarkPriceKlineData("1h");
+  const { closePrices } = await getMarkPriceKlineData("1d");
   const results = stochasticrsi({
     values: closePrices,
     rsiPeriod: 14,
@@ -274,7 +276,9 @@ export const stochasticrsiSignal = async () => {
 };
 
 export const ichimokucloudSignal = async () => {
-  const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData();
+  const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData(
+    "1h"
+  );
   const results = ichimokucloud({
     high: highPrices,
     low: lowPrices,
@@ -293,7 +297,9 @@ export const ichimokucloudSignal = async () => {
 };
 
 export const keltnerchannelsSignal = async () => {
-  const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData();
+  const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData(
+    "1h"
+  );
   const results = keltnerchannels({
     maPeriod: 20,
     atrPeriod: 20,
@@ -315,7 +321,9 @@ export const keltnerchannelsSignal = async () => {
 };
 
 export const chandelierexitSignal = async () => {
-  const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData();
+  const { highPrices, lowPrices, closePrices } = await getMarkPriceKlineData(
+    "1h"
+  );
   const results = chandelierexit({
     period: 22,
     multiplier: 3,
