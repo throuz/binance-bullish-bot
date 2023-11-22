@@ -27,7 +27,7 @@ export const stringifySafe = (obj) => {
 };
 
 export const errorHandler = async (error) => {
-  if (error.response.data.code === -1021) {
+  if (error.response && error.response.data.code === -1021) {
     await sendLineNotify(error.response.data.msg);
     return;
   }
