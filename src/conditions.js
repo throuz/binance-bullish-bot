@@ -11,8 +11,7 @@ import {
 } from "./api.js";
 import { nodeCache } from "./cache.js";
 import { getMaxLeverage, getPNLPercent } from "./helpers.js";
-import { getSignal } from "./signals.js";
-import { getRandomSixyao, hexagrams } from "./yi-jing.js";
+import { getIsInvestable } from "./yi-jing.js";
 
 // Open conditions
 
@@ -32,20 +31,11 @@ export const getIsAllTradingRatiosBullish = async () => {
   return results.every((result) => result[0].longShortRatio > 1);
 };
 
-export const getIsHexagramIndicateInvestmentPossible = () => {
-  const randomSixyao = getRandomSixyao();
-  const foundHexagram = hexagrams.find(
-    (hexagram) => hexagram.sixyao === randomSixyao
-  );
-  return foundHexagram.result;
-};
-
 export const getIsOpenConditionsMet = async () => {
   const results = await Promise.all([
     getIsMaxLeverageEnough(),
     getIsAllTradingRatiosBullish(),
-    getIsHexagramIndicateInvestmentPossible(),
-    getSignal()
+    getIsInvestable()
   ]);
   return results.every((result) => result);
 };

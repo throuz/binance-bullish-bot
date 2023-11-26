@@ -129,7 +129,7 @@ export const getRandomSymbol = async () => {
 
 export const getMarkPriceKlineData = async (interval = KLINE_INTERVAL) => {
   const symbol = nodeCache.get("symbol");
-  const totalParams = { symbol, interval };
+  const totalParams = { symbol, interval, limit: 1500 };
   const markPriceKlineData = await markPriceKlineDataAPI(totalParams);
   const openPrices = markPriceKlineData.map((kline) => Number(kline[1]));
   const highPrices = markPriceKlineData.map((kline) => Number(kline[2]));

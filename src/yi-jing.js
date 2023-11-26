@@ -1,3 +1,5 @@
+import { getMarkPriceKlineData } from "./helpers.js";
+
 export const hexagrams = [
   {
     sixyao: "111111",
@@ -392,4 +394,73 @@ export const getRandomSixyao = () => {
     sixyao += randomYao;
   }
   return sixyao;
+};
+
+export const getSixyaoByLastSixKLine = async () => {
+  let sixyao = "";
+  const { openPrices, closePrices } = await getMarkPriceKlineData();
+  const lastSixOpenPrices = openPrices.slice(-6);
+  const lastSixClosePrices = closePrices.slice(-6);
+  for (let i = 0; i < 6; i++) {
+    if (lastSixClosePrices[i] > lastSixOpenPrices[i]) {
+      sixyao += "1";
+    } else {
+      sixyao += "0";
+    }
+  }
+  return sixyao;
+};
+
+export const getAllYaosByKLineData = async () => {
+  let allYaos = "";
+  const { openPrices, closePrices } = await getMarkPriceKlineData();
+  for (let i = 0; i < openPrices.length; i++) {
+    if (closePrices[i] > openPrices[i]) {
+      allYaos += "1";
+    } else {
+      allYaos += "0";
+    }
+  }
+  return allYaos;
+};
+
+export const getSevenyaoArrayByAllYaos = async () => {
+  const allYaos = await getAllYaosByKLineData();
+  const sevenyaoArray = [];
+  for (let i = 0; i < allYaos.length - 7 + 1; i++) {
+    const substring = allYaos.substring(i, i + 7);
+    sevenyaoArray.push(substring);
+  }
+  return sevenyaoArray;
+};
+
+export const getWinLossResult = async (sixyao) => {
+  const sevenyaoArray = await getSevenyaoArrayByAllYaos();
+  const winYaos = sixyao + "1";
+  const winTimes = sevenyaoArray.reduce((acc, current) => {
+    return current === winYaos ? acc + 1 : acc;
+  }, 0);
+  const lossYaos = sixyao + "0";
+  const lossTimes = sevenyaoArray.reduce((acc, current) => {
+    return current === lossYaos ? acc + 1 : acc;
+  }, 0);
+  return { sixyao, winTimes, lossTimes, investable: winTimes > lossTimes };
+};
+
+export const getAllWinLossResult = async () => {
+  const sixyaos = hexagrams.map((hexagram) => hexagram.sixyao);
+  const winLossResultFuncArray = sixyaos.map((sixyao) =>
+    getWinLossResult(sixyao)
+  );
+  const allWinLossResult = await Promise.all(winLossResultFuncArray);
+  return allWinLossResult;
+};
+
+export const getIsInvestable = async () => {
+  const sixyaoByLastSixKLine = await getSixyaoByLastSixKLine();
+  const allWinLossResult = await getAllWinLossResult();
+  const foundResult = allWinLossResult.find(
+    (result) => result.sixyao === sixyaoByLastSixKLine
+  );
+  return foundResult.investable;
 };
