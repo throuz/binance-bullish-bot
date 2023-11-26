@@ -1,3 +1,7 @@
+import {
+  MIN_WIN_RATE,
+  PREDIT_NEXT_KLINES_NUMBER
+} from "../configs/trade-config.js";
 import { getMarkPriceKlineData } from "./helpers.js";
 
 export const hexagrams = [
@@ -411,7 +415,7 @@ export const getSixyaoByLastSixKLine = async () => {
   return sixyao;
 };
 
-export const getAllYaosByKLineData = async () => {
+export const getAllYaos = async () => {
   let allYaos = "";
   const { openPrices, closePrices } = await getMarkPriceKlineData();
   for (let i = 0; i < openPrices.length; i++) {
@@ -424,27 +428,34 @@ export const getAllYaosByKLineData = async () => {
   return allYaos;
 };
 
-export const getSevenyaoArrayByAllYaos = async () => {
-  const allYaos = await getAllYaosByKLineData();
-  const sevenyaoArray = [];
-  for (let i = 0; i < allYaos.length - 7 + 1; i++) {
-    const substring = allYaos.substring(i, i + 7);
-    sevenyaoArray.push(substring);
+export const getAllYaosArray = async () => {
+  const allYaos = await getAllYaos();
+  const yaosLength = 6 + PREDIT_NEXT_KLINES_NUMBER;
+  const allYaosArray = [];
+  for (let i = 0; i < allYaos.length - yaosLength + 1; i++) {
+    const substring = allYaos.substring(i, i + yaosLength);
+    allYaosArray.push(substring);
   }
-  return sevenyaoArray;
+  return allYaosArray;
 };
 
 export const getWinLossResult = async (sixyao) => {
-  const sevenyaoArray = await getSevenyaoArrayByAllYaos();
-  const winYaos = sixyao + "1";
-  const winTimes = sevenyaoArray.reduce((acc, current) => {
+  const allYaosArray = await getAllYaosArray();
+  const regex = new RegExp(`^${sixyao}`);
+  const matchedNineyaoArray = allYaosArray.filter((nineyao) =>
+    regex.test(nineyao)
+  );
+  const totalTimes = matchedNineyaoArray.length;
+  const winYaos = sixyao + "1".repeat(PREDIT_NEXT_KLINES_NUMBER);
+  const winTimes = matchedNineyaoArray.reduce((acc, current) => {
     return current === winYaos ? acc + 1 : acc;
   }, 0);
-  const lossYaos = sixyao + "0";
-  const lossTimes = sevenyaoArray.reduce((acc, current) => {
-    return current === lossYaos ? acc + 1 : acc;
-  }, 0);
-  return { sixyao, winTimes, lossTimes, investable: winTimes > lossTimes };
+  return {
+    sixyao,
+    totalTimes,
+    winTimes,
+    investable: winTimes / totalTimes > MIN_WIN_RATE
+  };
 };
 
 export const getAllWinLossResult = async () => {

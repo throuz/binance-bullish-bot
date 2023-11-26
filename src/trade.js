@@ -8,7 +8,6 @@ import {
   getPositionInformation,
   getStepSize
 } from "./helpers.js";
-import { addTradesInSignalsJson, addWinsInSignalsJson } from "./signals.js";
 
 export const changeToMaxLeverage = async () => {
   const symbol = nodeCache.get("symbol");
@@ -25,7 +24,6 @@ export const newOrder = async (totalParams) => {
 };
 
 export const openPosition = async () => {
-  await addTradesInSignalsJson();
   const [positionInformation, maxLeverage] = await Promise.all([
     getPositionInformation(),
     getMaxLeverage()
@@ -52,9 +50,6 @@ export const closePosition = async () => {
   const positionInformation = await getPositionInformation();
   const { positionAmt, unRealizedProfit } = positionInformation;
   if (positionAmt > 0) {
-    if (unRealizedProfit > 0) {
-      await addWinsInSignalsJson();
-    }
     const symbol = nodeCache.get("symbol");
     await newOrder({
       symbol,
