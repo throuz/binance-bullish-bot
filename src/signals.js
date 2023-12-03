@@ -21,21 +21,54 @@ import {
   williamsr,
   wma
 } from "technicalindicators";
+import { MIN_WIN_RATE } from "../configs/trade-config.js";
 import { nodeCache } from "./cache.js";
 import { getMarkPrices } from "./helpers.js";
+
+export const getCombinedPriceData = async (results) => {
+  const { closePrices } = await getMarkPrices();
+  const trimmedPrices = closePrices.slice(-results.length);
+  const combinedPriceData = [];
+  for (let i = 0; i < trimmedPrices.length; i++) {
+    combinedPriceData.push({
+      price: trimmedPrices[i],
+      nextPrice: trimmedPrices[i + 1],
+      result: results[i]
+    });
+  }
+  return combinedPriceData;
+};
+
+export const getWinRate = (convertedData) => {
+  const lastData = convertedData.pop();
+  const filteredByTypeData = convertedData.filter(
+    (item) => item.type === lastData.type
+  );
+  const winTimes = filteredByTypeData.filter(
+    (item) => item.nextPrice > item.price
+  ).length;
+  const totalTimes = filteredByTypeData.length;
+  const winRate = winTimes / totalTimes;
+  return winRate;
+};
 
 export const smaSignal = async () => {
   const { closePrices } = await getMarkPrices();
   const results = sma({ period: 7, values: closePrices });
-  const lastResult = results[results.length - 1];
-  const secondLastResult = results[results.length - 2];
-  const lastClosePrice = closePrices[closePrices.length - 1];
-  const sencondLastClosePrice = closePrices[closePrices.length - 2];
-  return {
-    name: "sma",
-    signal:
-      sencondLastClosePrice < secondLastResult && lastClosePrice > lastResult
-  };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const type = (() => {
+        if (price > result) {
+          return "A";
+        }
+        return "B";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const winRate = getWinRate(convertedData);
+  return { name: "sma", signal: winRate > MIN_WIN_RATE };
 };
 
 export const emaSignal = async () => {
