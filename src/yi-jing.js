@@ -1,5 +1,5 @@
-import { MIN_WIN_RATE } from "../configs/trade-config.js";
 import { getMarkPriceKlineData } from "./helpers.js";
+import { getCombinedPriceData, getIsWinRateEnough } from "./signals.js";
 
 export const getAllYao = async () => {
   const markPriceKlineData = await getMarkPriceKlineData();
@@ -9,39 +9,24 @@ export const getAllYao = async () => {
   return allYao;
 };
 
-export const getLastSixYao = async () => {
+export const getSixYaoArray = async () => {
+  const sixYaoArray = [];
   const allYao = await getAllYao();
-  const lastSixYao = allYao.slice(-6);
-  return lastSixYao;
-};
-
-export const getSevenYaoArray = async () => {
-  const sevenYaoArray = [];
-  const allYao = await getAllYao();
-  for (let i = 0; i < allYao.length - 6; i++) {
-    const substring = allYao.substring(i, i + 7);
-    sevenYaoArray.push(substring);
+  for (let i = 0; i < allYao.length - 5; i++) {
+    const substring = allYao.substring(i, i + 6);
+    sixYaoArray.push(substring);
   }
-  return sevenYaoArray;
-};
-
-export const getMatchedSevenYaoArray = async () => {
-  const sevenYaoArray = await getSevenYaoArray();
-  const lastSixYao = await getLastSixYao();
-  const regex = new RegExp(`^${lastSixYao}`);
-  const matchedSevenYaoArray = sevenYaoArray.filter((sevenYao) =>
-    regex.test(sevenYao)
-  );
-  return matchedSevenYaoArray;
+  return sixYaoArray;
 };
 
 export const getIsInvestable = async () => {
-  const matchedSevenYaoArray = await getMatchedSevenYaoArray();
-  const totalTimes = matchedSevenYaoArray.length;
-  const lastSixYao = await getLastSixYao();
-  const winYaos = lastSixYao + "1";
-  const winTimes = matchedSevenYaoArray.reduce((acc, current) => {
-    return current === winYaos ? acc + 1 : acc;
-  }, 0);
-  return winTimes / totalTimes > MIN_WIN_RATE;
+  const sixYaoArray = await getSixYaoArray();
+  const combinedPriceData = await getCombinedPriceData(sixYaoArray);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      return { price, nextPrice, type: result };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return isWinRateEnough;
 };
