@@ -11,6 +11,7 @@ import {
 } from "./api.js";
 import { nodeCache } from "./cache.js";
 import { getMaxLeverage, getPNLPercent } from "./helpers.js";
+import { getSignal } from "./signals.js";
 import { getIsInvestable } from "./yi-jing.js";
 
 // Open conditions
@@ -35,7 +36,8 @@ export const getIsOpenConditionsMet = async () => {
   const results = await Promise.all([
     getIsMaxLeverageEnough(),
     getIsAllTradingRatiosBullish(),
-    getIsInvestable()
+    getIsInvestable(),
+    getSignal()
   ]);
   return results.every((result) => result);
 };
