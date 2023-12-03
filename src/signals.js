@@ -1,4 +1,3 @@
-import { readFile, writeFile } from "node:fs/promises";
 import {
   adx,
   awesomeoscillator,
@@ -22,7 +21,6 @@ import {
   wma
 } from "technicalindicators";
 import { MIN_WIN_RATE } from "../configs/trade-config.js";
-import { nodeCache } from "./cache.js";
 import { getMarkPrices } from "./helpers.js";
 
 export const getCombinedPriceData = async (results) => {
@@ -52,6 +50,11 @@ export const getWinRate = (convertedData) => {
   return winRate;
 };
 
+export const getIsWinRateEnough = (convertedData) => {
+  const winRate = getWinRate(convertedData);
+  return winRate > MIN_WIN_RATE;
+};
+
 export const smaSignal = async () => {
   const { closePrices } = await getMarkPrices();
   const results = sma({ period: 7, values: closePrices });
@@ -62,55 +65,82 @@ export const smaSignal = async () => {
         if (price > result) {
           return "A";
         }
-        return "B";
+        if (price < result) {
+          return "B";
+        }
+        return "other";
       })();
       return { price, nextPrice, type };
     }
   );
-  const winRate = getWinRate(convertedData);
-  return { name: "sma", signal: winRate > MIN_WIN_RATE };
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "sma", signal: isWinRateEnough };
 };
 
 export const emaSignal = async () => {
   const { closePrices } = await getMarkPrices();
   const results = ema({ period: 9, values: closePrices });
-  const lastResult = results[results.length - 1];
-  const secondLastResult = results[results.length - 2];
-  const lastClosePrice = closePrices[closePrices.length - 1];
-  const sencondLastClosePrice = closePrices[closePrices.length - 2];
-  return {
-    name: "ema",
-    signal:
-      sencondLastClosePrice < secondLastResult && lastClosePrice > lastResult
-  };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const type = (() => {
+        if (price > result) {
+          return "A";
+        }
+        if (price < result) {
+          return "B";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "ema", signal: isWinRateEnough };
 };
 
 export const wmaSignal = async () => {
   const { closePrices } = await getMarkPrices();
   const results = wma({ period: 9, values: closePrices });
-  const lastResult = results[results.length - 1];
-  const secondLastResult = results[results.length - 2];
-  const lastClosePrice = closePrices[closePrices.length - 1];
-  const sencondLastClosePrice = closePrices[closePrices.length - 2];
-  return {
-    name: "wma",
-    signal:
-      sencondLastClosePrice < secondLastResult && lastClosePrice > lastResult
-  };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const type = (() => {
+        if (price > result) {
+          return "A";
+        }
+        if (price < result) {
+          return "B";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "wma", signal: isWinRateEnough };
 };
 
 export const wemaSignal = async () => {
   const { closePrices } = await getMarkPrices();
   const results = wema({ period: 9, values: closePrices });
-  const lastResult = results[results.length - 1];
-  const secondLastResult = results[results.length - 2];
-  const lastClosePrice = closePrices[closePrices.length - 1];
-  const sencondLastClosePrice = closePrices[closePrices.length - 2];
-  return {
-    name: "wema",
-    signal:
-      sencondLastClosePrice < secondLastResult && lastClosePrice > lastResult
-  };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const type = (() => {
+        if (price > result) {
+          return "A";
+        }
+        if (price < result) {
+          return "B";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "wema", signal: isWinRateEnough };
 };
 
 export const macdSignal = async () => {
@@ -123,24 +153,58 @@ export const macdSignal = async () => {
     slowPeriod: 26,
     signalPeriod: 9
   });
-  const lastResult = results[results.length - 1];
-  const secondlLastResult = results[results.length - 2];
-  const { MACD, signal, histogram } = lastResult;
-  return {
-    name: "macd",
-    signal:
-      MACD < 0 &&
-      signal < 0 &&
-      histogram > 0 &&
-      histogram > secondlLastResult.histogram
-  };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const { MACD, signal, histogram } = result;
+      const type = (() => {
+        if (MACD < 0 && signal < 0 && histogram < 0) {
+          return "A";
+        }
+        if (MACD < 0 && signal < 0 && histogram > 0) {
+          return "B";
+        }
+        if (MACD > 0 && signal > 0 && histogram > 0) {
+          return "C";
+        }
+        if (MACD > 0 && signal > 0 && histogram < 0) {
+          return "D";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "macd", signal: isWinRateEnough };
 };
 
 export const rsiSignal = async () => {
   const { closePrices } = await getMarkPrices();
   const results = rsi({ period: 14, values: closePrices });
-  const lastResult = results[results.length - 1];
-  return { name: "rsi", signal: lastResult > 50 };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const type = (() => {
+        if (result < 30) {
+          return "A";
+        }
+        if (result > 30 && result < 50) {
+          return "B";
+        }
+        if (result > 50 && result < 70) {
+          return "C";
+        }
+        if (result > 70) {
+          return "D";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "rsi", signal: isWinRateEnough };
 };
 
 export const bollingerbandsSignal = async () => {
@@ -150,8 +214,30 @@ export const bollingerbandsSignal = async () => {
     stdDev: 2,
     values: closePrices
   });
-  const lastResult = results[results.length - 1];
-  return { name: "bollingerbands", signal: lastResult.pb > 0.5 };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const { pb } = result;
+      const type = (() => {
+        if (pb < 0) {
+          return "A";
+        }
+        if (pb > 0 && pb < 0.5) {
+          return "B";
+        }
+        if (pb > 0.5 && pb < 1) {
+          return "C";
+        }
+        if (pb > 1) {
+          return "D";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "bollingerbands", signal: isWinRateEnough };
 };
 
 export const adxSignal = async () => {
@@ -162,22 +248,52 @@ export const adxSignal = async () => {
     close: closePrices,
     period: 14
   });
-  const lastResult = results[results.length - 1];
-  return {
-    name: "adx",
-    signal: lastResult.pdi > lastResult.mdi && lastResult.adx > 40
-  };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const { pdi, mdi } = result;
+      const type = (() => {
+        if (pdi > mdi) {
+          return "A";
+        }
+        if (pdi < mdi) {
+          return "B";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "adx", signal: isWinRateEnough };
 };
 
 export const rocSignal = async () => {
   const { closePrices } = await getMarkPrices();
   const results = roc({ period: 9, values: closePrices });
-  const lastResult = results[results.length - 1];
-  const secondLastResult = results[results.length - 2];
-  return {
-    name: "roc",
-    signal: lastResult < -3 && lastResult > secondLastResult
-  };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const type = (() => {
+        if (result < -3) {
+          return "A";
+        }
+        if (result > -3 && result < 0) {
+          return "B";
+        }
+        if (result > 0 && result < 3) {
+          return "C";
+        }
+        if (result > 3) {
+          return "D";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "roc", signal: isWinRateEnough };
 };
 
 export const kstSignal = async () => {
@@ -194,30 +310,57 @@ export const kstSignal = async () => {
     signalPeriod: 9,
     values: closePrices
   });
-  const lastResult = results[results.length - 1];
-  const secondLastResult = results[results.length - 2];
-  return {
-    name: "kst",
-    signal:
-      lastResult.kst < 0 &&
-      lastResult.signal < 0 &&
-      lastResult.kst > lastResult.signal &&
-      lastResult.kst > secondLastResult.kst &&
-      lastResult.signal > secondLastResult.signal
-  };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const { kst, signal } = result;
+      const type = (() => {
+        if (kst < 0 && signal < 0 && kst < signal) {
+          return "A";
+        }
+        if (kst < 0 && signal < 0 && kst > signal) {
+          return "B";
+        }
+        if (kst > 0 && signal > 0 && kst < signal) {
+          return "C";
+        }
+        if (kst > 0 && signal > 0 && kst > signal) {
+          return "D";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "kst", signal: isWinRateEnough };
 };
 
 export const psarSignal = async () => {
-  const { highPrices, lowPrices, closePrices } = await getMarkPrices();
+  const { highPrices, lowPrices } = await getMarkPrices();
   const results = psar({
     step: 0.02,
     max: 0.2,
     high: highPrices,
     low: lowPrices
   });
-  const lastResult = results[results.length - 1];
-  const lastclosePrice = closePrices[closePrices.length - 1];
-  return { name: "psar", signal: lastclosePrice > lastResult };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const type = (() => {
+        if (result > price) {
+          return "A";
+        }
+        if (result < price) {
+          return "B";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "psar", signal: isWinRateEnough };
 };
 
 export const stochasticSignal = async () => {
@@ -229,8 +372,30 @@ export const stochasticSignal = async () => {
     close: closePrices,
     signalPeriod: 3
   });
-  const lastResult = results[results.length - 1];
-  return { name: "stochastic", signal: lastResult.k > 95 };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const { k, d } = result;
+      const type = (() => {
+        if (k < 20 && d < 20) {
+          return "A";
+        }
+        if (k > 20 && k < 50 && d > 20 && d < 50) {
+          return "B";
+        }
+        if (k > 50 && k < 80 && d > 50 && d < 80) {
+          return "C";
+        }
+        if (k > 80 && d > 80) {
+          return "D";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "stochastic", signal: isWinRateEnough };
 };
 
 export const williamsrSignal = async () => {
@@ -241,20 +406,57 @@ export const williamsrSignal = async () => {
     close: closePrices,
     period: 14
   });
-  const lastResult = results[results.length - 1];
-  return { name: "williamsr", signal: lastResult < -5 };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const type = (() => {
+        if (result < -80) {
+          return "A";
+        }
+        if (result > -80 && result < -50) {
+          return "B";
+        }
+        if (result > -50 && result < -20) {
+          return "C";
+        }
+        if (result > -20) {
+          return "D";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "williamsr", signal: isWinRateEnough };
 };
 
 export const trixSignal = async () => {
   const { closePrices } = await getMarkPrices();
   const results = trix({ values: closePrices, period: 18 });
-  const lastResult = results[results.length - 1];
-  const secondLastResult = results[results.length - 2];
-  return {
-    name: "trix",
-    signal:
-      lastResult < 0 && secondLastResult < 0 && lastResult > secondLastResult
-  };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const type = (() => {
+        if (result < -6) {
+          return "A";
+        }
+        if (result > -6 && result < 0) {
+          return "B";
+        }
+        if (result > 0 && result < 6) {
+          return "C";
+        }
+        if (result > 6) {
+          return "D";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "trix", signal: isWinRateEnough };
 };
 
 export const cciSignal = async () => {
@@ -265,8 +467,29 @@ export const cciSignal = async () => {
     close: closePrices,
     period: 20
   });
-  const lastResult = results[results.length - 1];
-  return { name: "cci", signal: lastResult > 0 };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const type = (() => {
+        if (result < -100) {
+          return "A";
+        }
+        if (result > -100 && result < 0) {
+          return "B";
+        }
+        if (result > 0 && result < 100) {
+          return "C";
+        }
+        if (result > 100) {
+          return "D";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "cci", signal: isWinRateEnough };
 };
 
 export const awesomeoscillatorSignal = async () => {
@@ -277,12 +500,29 @@ export const awesomeoscillatorSignal = async () => {
     fastPeriod: 5,
     slowPeriod: 34
   });
-  const lastResult = results[results.length - 1];
-  const secondLastResult = results[results.length - 2];
-  return {
-    name: "awesomeoscillator",
-    signal: secondLastResult < 0 && lastResult > 0
-  };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const type = (() => {
+        if (result < -400) {
+          return "A";
+        }
+        if (result > -400 && result < 0) {
+          return "B";
+        }
+        if (result > 0 && result < 400) {
+          return "C";
+        }
+        if (result > 400) {
+          return "D";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "awesomeoscillator", signal: isWinRateEnough };
 };
 
 export const stochasticrsiSignal = async () => {
@@ -294,12 +534,34 @@ export const stochasticrsiSignal = async () => {
     kPeriod: 3,
     dPeriod: 3
   });
-  const lastResult = results[results.length - 1];
-  return { name: "stochasticrsi", signal: lastResult.k > 95 };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const { k, d } = result;
+      const type = (() => {
+        if (k < 20 && d < 20) {
+          return "A";
+        }
+        if (k > 20 && k < 50 && d > 20 && d < 50) {
+          return "B";
+        }
+        if (k > 50 && k < 80 && d > 50 && d < 80) {
+          return "C";
+        }
+        if (k > 80 && d > 80) {
+          return "D";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "stochasticrsi", signal: isWinRateEnough };
 };
 
 export const ichimokucloudSignal = async () => {
-  const { highPrices, lowPrices, closePrices } = await getMarkPrices();
+  const { highPrices, lowPrices } = await getMarkPrices();
   const results = ichimokucloud({
     high: highPrices,
     low: lowPrices,
@@ -308,13 +570,30 @@ export const ichimokucloudSignal = async () => {
     spanPeriod: 52,
     displacement: 26
   });
-  const lastResult = results[results.length - 1];
-  const lastclosePrice = closePrices[closePrices.length - 1];
-  const { conversion, base } = lastResult;
-  return {
-    name: "ichimokucloud",
-    signal: lastclosePrice > conversion && lastclosePrice > base
-  };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const { conversion, spanA, spanB } = result;
+      const type = (() => {
+        if (conversion > spanA && conversion > spanB) {
+          return "A";
+        }
+        if (conversion < spanA && conversion < spanB) {
+          return "B";
+        }
+        if (spanA > spanB && conversion < spanA && conversion > spanB) {
+          return "C";
+        }
+        if (spanB > spanA && conversion < spanB && conversion > spanA) {
+          return "D";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "ichimokucloud", signal: isWinRateEnough };
 };
 
 export const keltnerchannelsSignal = async () => {
@@ -328,15 +607,30 @@ export const keltnerchannelsSignal = async () => {
     low: lowPrices,
     close: closePrices
   });
-  const lastResult = results[results.length - 1];
-  const secondLastResult = results[results.length - 2];
-  const lastclosePrice = closePrices[closePrices.length - 1];
-  return {
-    name: "keltnerchannels",
-    signal:
-      lastResult.middle > secondLastResult.middle &&
-      lastclosePrice > lastResult.middle
-  };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const { middle, upper, lower } = result;
+      const type = (() => {
+        if (price < lower) {
+          return "A";
+        }
+        if (price > lower && price < middle) {
+          return "B";
+        }
+        if (price > middle && price < upper) {
+          return "C";
+        }
+        if (price > upper) {
+          return "D";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "keltnerchannels", signal: isWinRateEnough };
 };
 
 export const chandelierexitSignal = async () => {
@@ -348,12 +642,30 @@ export const chandelierexitSignal = async () => {
     low: lowPrices,
     close: closePrices
   });
-  const lastResult = results[results.length - 1];
-  const lastclosePrice = closePrices[closePrices.length - 1];
-  return {
-    name: "chandelierexit",
-    signal: lastclosePrice > lastResult.exitShort
-  };
+  const combinedPriceData = await getCombinedPriceData(results);
+  const convertedData = combinedPriceData.map(
+    ({ price, nextPrice, result }) => {
+      const { exitLong, exitShort } = result;
+      const type = (() => {
+        if (price > exitLong && price > exitShort) {
+          return "A";
+        }
+        if (price < exitLong && price < exitShort) {
+          return "B";
+        }
+        if (exitLong > exitShort && price < exitLong && price > exitShort) {
+          return "C";
+        }
+        if (exitShort > exitLong && price < exitShort && price > exitLong) {
+          return "D";
+        }
+        return "other";
+      })();
+      return { price, nextPrice, type };
+    }
+  );
+  const isWinRateEnough = getIsWinRateEnough(convertedData);
+  return { name: "chandelierexit", signal: isWinRateEnough };
 };
 
 export const signalFunctionArray = [
@@ -385,61 +697,9 @@ export const getSignals = async () => {
   return signals;
 };
 
-export const getTrueSignals = async () => {
+export const getSignal = async () => {
   const signals = await getSignals();
   const trueSignals = signals.filter((item) => item.signal === true);
-  return trueSignals;
-};
-
-export const getFalseSignals = async () => {
-  const signals = await getSignals();
-  const falseSignals = signals.filter((item) => item.signal === false);
-  return falseSignals;
-};
-
-export const signalsJsonPath = new URL("../signals.json", import.meta.url);
-
-export const readSignalsJson = async () => {
-  const contents = await readFile(signalsJsonPath, { encoding: "utf8" });
-  const parsedContents = JSON.parse(contents);
-  return parsedContents;
-};
-
-export const addTradesInSignalsJson = async () => {
-  const signalsJsonData = await readSignalsJson();
-  const trueSignals = await getTrueSignals();
-  const trueSignalNames = trueSignals.map((item) => item.name);
-  nodeCache.set("trueSignalNames", trueSignalNames, 0);
-  for (const name of trueSignalNames) {
-    const foundIndex = signalsJsonData.findIndex((item) => item.name === name);
-    signalsJsonData[foundIndex].trades++;
-  }
-  await writeFile(signalsJsonPath, JSON.stringify(signalsJsonData));
-};
-
-export const addWinsInSignalsJson = async () => {
-  if (nodeCache.has("trueSignalNames")) {
-    const signalsJsonData = await readSignalsJson();
-    const trueSignalNames = nodeCache.get("trueSignalNames");
-    for (const name of trueSignalNames) {
-      const foundIndex = signalsJsonData.findIndex(
-        (item) => item.name === name
-      );
-      signalsJsonData[foundIndex].wins++;
-    }
-    await writeFile(signalsJsonPath, JSON.stringify(signalsJsonData));
-  }
-};
-
-export const getSignal = async () => {
-  const trueSignals = await getTrueSignals();
-  const trueSignalNames = trueSignals.map((item) => item.name);
-  const signalsJsonData = await readSignalsJson();
-  const filteredSignalsJsonData = signalsJsonData.filter((item) =>
-    trueSignalNames.includes(item.name)
-  );
-  const scores = filteredSignalsJsonData.map((item) => item.wins / item.trades);
-  const totalScore = scores.reduce((partialSum, a) => partialSum + a, 0);
-  const fullScore = signalFunctionArray.length * 0.5;
-  return totalScore / fullScore > 0.5;
+  const winRate = trueSignals.length / signals.length;
+  return winRate > MIN_WIN_RATE;
 };

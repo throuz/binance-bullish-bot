@@ -4,4 +4,3 @@ nohup.out
 env-config-dev.js
 env-config-prod.js
 test.js
-signals.json
