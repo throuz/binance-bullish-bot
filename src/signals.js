@@ -23,6 +23,18 @@ import {
 import { MIN_WIN_RATE } from "../configs/trade-config.js";
 import { getMarkPrices } from "./helpers.js";
 
+export const getCombinedMaData = (fastResults, slowResults) => {
+  const trimmedResults = fastResults.slice(-slowResults.length);
+  const combinedMaData = [];
+  for (let i = 0; i < trimmedResults.length; i++) {
+    combinedMaData.push({
+      fastResult: trimmedResults[i],
+      slowResult: slowResults[i]
+    });
+  }
+  return combinedMaData;
+};
+
 export const getCombinedPriceData = async (results) => {
   const { closePrices } = await getMarkPrices();
   const trimmedPrices = closePrices.slice(-results.length);
@@ -57,16 +69,25 @@ export const getIsWinRateEnough = (convertedData) => {
 
 export const smaSignal = async () => {
   const { closePrices } = await getMarkPrices();
-  const results = sma({ period: 7, values: closePrices });
-  const combinedPriceData = await getCombinedPriceData(results);
+  const fastResults = sma({ period: 7, values: closePrices });
+  const slowResults = sma({ period: 50, values: closePrices });
+  const combinedMaData = getCombinedMaData(fastResults, slowResults);
+  const combinedPriceData = await getCombinedPriceData(combinedMaData);
   const convertedData = combinedPriceData.map(
     ({ price, nextPrice, result }) => {
+      const { fastResult, slowResult } = result;
       const type = (() => {
-        if (price > result) {
+        if (price > fastResult && price > slowResult) {
           return "A";
         }
-        if (price < result) {
+        if (price < fastResult && price < slowResult) {
           return "B";
+        }
+        if (price > fastResult && price < slowResult) {
+          return "C";
+        }
+        if (price < fastResult && price > slowResult) {
+          return "D";
         }
         return "other";
       })();
@@ -79,16 +100,25 @@ export const smaSignal = async () => {
 
 export const emaSignal = async () => {
   const { closePrices } = await getMarkPrices();
-  const results = ema({ period: 9, values: closePrices });
-  const combinedPriceData = await getCombinedPriceData(results);
+  const fastResults = ema({ period: 9, values: closePrices });
+  const slowResults = ema({ period: 50, values: closePrices });
+  const combinedMaData = getCombinedMaData(fastResults, slowResults);
+  const combinedPriceData = await getCombinedPriceData(combinedMaData);
   const convertedData = combinedPriceData.map(
     ({ price, nextPrice, result }) => {
+      const { fastResult, slowResult } = result;
       const type = (() => {
-        if (price > result) {
+        if (price > fastResult && price > slowResult) {
           return "A";
         }
-        if (price < result) {
+        if (price < fastResult && price < slowResult) {
           return "B";
+        }
+        if (price > fastResult && price < slowResult) {
+          return "C";
+        }
+        if (price < fastResult && price > slowResult) {
+          return "D";
         }
         return "other";
       })();
@@ -101,16 +131,25 @@ export const emaSignal = async () => {
 
 export const wmaSignal = async () => {
   const { closePrices } = await getMarkPrices();
-  const results = wma({ period: 9, values: closePrices });
-  const combinedPriceData = await getCombinedPriceData(results);
+  const fastResults = wma({ period: 9, values: closePrices });
+  const slowResults = wma({ period: 50, values: closePrices });
+  const combinedMaData = getCombinedMaData(fastResults, slowResults);
+  const combinedPriceData = await getCombinedPriceData(combinedMaData);
   const convertedData = combinedPriceData.map(
     ({ price, nextPrice, result }) => {
+      const { fastResult, slowResult } = result;
       const type = (() => {
-        if (price > result) {
+        if (price > fastResult && price > slowResult) {
           return "A";
         }
-        if (price < result) {
+        if (price < fastResult && price < slowResult) {
           return "B";
+        }
+        if (price > fastResult && price < slowResult) {
+          return "C";
+        }
+        if (price < fastResult && price > slowResult) {
+          return "D";
         }
         return "other";
       })();
@@ -123,16 +162,25 @@ export const wmaSignal = async () => {
 
 export const wemaSignal = async () => {
   const { closePrices } = await getMarkPrices();
-  const results = wema({ period: 9, values: closePrices });
-  const combinedPriceData = await getCombinedPriceData(results);
+  const fastResults = wema({ period: 9, values: closePrices });
+  const slowResults = wema({ period: 50, values: closePrices });
+  const combinedMaData = getCombinedMaData(fastResults, slowResults);
+  const combinedPriceData = await getCombinedPriceData(combinedMaData);
   const convertedData = combinedPriceData.map(
     ({ price, nextPrice, result }) => {
+      const { fastResult, slowResult } = result;
       const type = (() => {
-        if (price > result) {
+        if (price > fastResult && price > slowResult) {
           return "A";
         }
-        if (price < result) {
+        if (price < fastResult && price < slowResult) {
           return "B";
+        }
+        if (price > fastResult && price < slowResult) {
+          return "C";
+        }
+        if (price < fastResult && price > slowResult) {
+          return "D";
         }
         return "other";
       })();
@@ -251,13 +299,19 @@ export const adxSignal = async () => {
   const combinedPriceData = await getCombinedPriceData(results);
   const convertedData = combinedPriceData.map(
     ({ price, nextPrice, result }) => {
-      const { pdi, mdi } = result;
+      const { pdi, mdi, adx } = result;
       const type = (() => {
-        if (pdi > mdi) {
+        if (pdi > mdi && adx > 50) {
           return "A";
         }
-        if (pdi < mdi) {
+        if (pdi < mdi && adx > 50) {
           return "B";
+        }
+        if (pdi > mdi && adx < 50) {
+          return "C";
+        }
+        if (pdi < mdi && adx < 50) {
+          return "D";
         }
         return "other";
       })();

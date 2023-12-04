@@ -5,4 +5,4 @@ export const TAKE_PROFIT_PERCENT = 61.8;
 export const STOP_LOSS_PERCENT = -38.2;
 export const KLINE_INTERVAL = "1h";
 export const MINIMUM_LEVERAGE = 50;
-export const MIN_WIN_RATE = 0.5;
+export const MIN_WIN_RATE = 0.55;
