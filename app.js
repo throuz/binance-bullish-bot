@@ -48,6 +48,9 @@ const executeTradingStrategy = async () => {
       if (isCloseConditionsMet) {
         await closePosition();
         await logBalance();
+        if (isCloseConditionsMet === "isTakeProfitReached") {
+          await openPosition();
+        }
       }
     }
   } catch (error) {

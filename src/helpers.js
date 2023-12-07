@@ -1,13 +1,8 @@
-import {
-  KLINE_INTERVAL,
-  ORDER_AMOUNT_PERCENT,
-  QUOTE_ASSET
-} from "../configs/trade-config.js";
+import { ORDER_AMOUNT_PERCENT, QUOTE_ASSET } from "../configs/trade-config.js";
 import {
   exchangeInformationAPI,
   futuresAccountBalanceAPI,
   markPriceAPI,
-  markPriceKlineDataAPI,
   notionalAndLeverageBracketsAPI,
   positionInformationAPI
 } from "./api.js";
@@ -125,22 +120,6 @@ export const getRandomSymbol = async () => {
   );
   const randomIndex = Math.floor(Math.random() * symbols.length);
   return symbols[randomIndex].symbol;
-};
-
-export const getMarkPriceKlineData = async () => {
-  const symbol = nodeCache.get("symbol");
-  const totalParams = { symbol, interval: KLINE_INTERVAL, limit: 1500 };
-  const markPriceKlineData = await markPriceKlineDataAPI(totalParams);
-  return markPriceKlineData;
-};
-
-export const getMarkPrices = async () => {
-  const markPriceKlineData = await getMarkPriceKlineData();
-  const openPrices = markPriceKlineData.map((kline) => Number(kline[1]));
-  const highPrices = markPriceKlineData.map((kline) => Number(kline[2]));
-  const lowPrices = markPriceKlineData.map((kline) => Number(kline[3]));
-  const closePrices = markPriceKlineData.map((kline) => Number(kline[4]));
-  return { openPrices, highPrices, lowPrices, closePrices };
 };
 
 export const getPrecisionBySize = (size) => {

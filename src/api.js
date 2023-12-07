@@ -65,33 +65,9 @@ export const notionalAndLeverageBracketsAPI = async (totalParams) => {
   return responseData;
 };
 
-export const topLongShortAccountRatioAPI = async (totalParams) => {
+export const tickerPriceChangeStatisticsAPI = async (totalParams) => {
   const responseData = await getBinanceFuturesAPI(
-    "/futures/data/topLongShortAccountRatio",
-    totalParams
-  );
-  return responseData;
-};
-
-export const topLongShortPositionRatioAPI = async (totalParams) => {
-  const responseData = await getBinanceFuturesAPI(
-    "/futures/data/topLongShortPositionRatio",
-    totalParams
-  );
-  return responseData;
-};
-
-export const globalLongShortAccountRatioAPI = async (totalParams) => {
-  const responseData = await getBinanceFuturesAPI(
-    "/futures/data/globalLongShortAccountRatio",
-    totalParams
-  );
-  return responseData;
-};
-
-export const markPriceKlineDataAPI = async (totalParams) => {
-  const responseData = await getBinanceFuturesAPI(
-    "/fapi/v1/markPriceKlines",
+    "/fapi/v1/ticker/24hr",
     totalParams
   );
   return responseData;

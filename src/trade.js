@@ -48,7 +48,7 @@ export const openPosition = async () => {
 
 export const closePosition = async () => {
   const positionInformation = await getPositionInformation();
-  const { positionAmt, unRealizedProfit } = positionInformation;
+  const { positionAmt } = positionInformation;
   if (positionAmt > 0) {
     const symbol = nodeCache.get("symbol");
     await newOrder({

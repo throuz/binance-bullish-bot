@@ -1,18 +1,10 @@
 import {
   MINIMUM_LEVERAGE,
   STOP_LOSS_PERCENT,
-  TAKE_PROFIT_PERCENT,
-  TRADING_RATIOS_PERIOD
+  TAKE_PROFIT_PERCENT
 } from "../configs/trade-config.js";
-import {
-  globalLongShortAccountRatioAPI,
-  topLongShortAccountRatioAPI,
-  topLongShortPositionRatioAPI
-} from "./api.js";
-import { nodeCache } from "./cache.js";
+import { tickerPriceChangeStatisticsAPI } from "./api.js";
 import { getMaxLeverage, getPNLPercent } from "./helpers.js";
-import { getSignal } from "./signals.js";
-import { getIsInvestable } from "./yi-jing.js";
 
 // Open conditions
 
@@ -21,33 +13,23 @@ export const getIsMaxLeverageEnough = async () => {
   return maxLeverage >= MINIMUM_LEVERAGE;
 };
 
-export const getIsAllTradingRatiosBullish = async () => {
-  const symbol = nodeCache.get("symbol");
-  const totalParams = { symbol, period: TRADING_RATIOS_PERIOD, limit: 1 };
-  const results = await Promise.all([
-    topLongShortAccountRatioAPI(totalParams),
-    topLongShortPositionRatioAPI(totalParams),
-    globalLongShortAccountRatioAPI(totalParams)
-  ]);
-  return results.every((result) => result[0].longShortRatio > 1);
+export const getIsOverAllPriceUpTrend = async () => {
+  const tickerPriceChangeStatistics = await tickerPriceChangeStatisticsAPI();
+  const priceUpStatistics = tickerPriceChangeStatistics.filter(
+    (item) => item.priceChangePercent > 0
+  );
+  return priceUpStatistics.length / tickerPriceChangeStatistics.length > 0.5;
 };
 
 export const getIsOpenConditionsMet = async () => {
   const results = await Promise.all([
     getIsMaxLeverageEnough(),
-    getIsAllTradingRatiosBullish(),
-    getIsInvestable(),
-    getSignal()
+    getIsOverAllPriceUpTrend()
   ]);
   return results.every((result) => result);
 };
 
 // Close conditions
-
-export const getIsNotAllTradingRatiosBullish = async () => {
-  const isAllTradingRatiosBullish = await getIsAllTradingRatiosBullish();
-  return !isAllTradingRatiosBullish;
-};
 
 export const getIsTakeProfitReached = async () => {
   const PNLPercent = await getPNLPercent();
@@ -60,10 +42,15 @@ export const getIsStopLossReached = async () => {
 };
 
 export const getIsCloseConditionsMet = async () => {
-  const results = await Promise.all([
-    getIsNotAllTradingRatiosBullish(),
+  const [isTakeProfitReached, isStopLossReached] = await Promise.all([
     getIsTakeProfitReached(),
     getIsStopLossReached()
   ]);
-  return results.some((result) => result);
+  if (isTakeProfitReached) {
+    return "isTakeProfitReached";
+  }
+  if (isStopLossReached) {
+    return "isStopLossReached";
+  }
+  return false;
 };
