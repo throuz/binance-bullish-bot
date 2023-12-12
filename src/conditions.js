@@ -1,10 +1,17 @@
 import {
   MINIMUM_LEVERAGE,
   STOP_LOSS_PERCENT,
-  TAKE_PROFIT_PERCENT
+  TAKE_PROFIT_PERCENT,
+  SHORT_PERIOD,
+  LONG_PERIOD
 } from "../configs/trade-config.js";
 import { tickerPriceChangeStatisticsAPI } from "./api.js";
-import { getMaxLeverage, getPNLPercent } from "./helpers.js";
+import {
+  getMaxLeverage,
+  getPNLPercent,
+  getAveragePrice,
+  getMarkPrice
+} from "./helpers.js";
 
 // Open conditions
 
@@ -21,10 +28,18 @@ export const getIsOverAllPriceUpTrend = async () => {
   return priceUpStatistics.length / tickerPriceChangeStatistics.length > 0.5;
 };
 
+export const getIsOverAveragePrices = async () => {
+  const markPrice = await getMarkPrice();
+  const shortAveragePrice = await getAveragePrice(SHORT_PERIOD);
+  const longAveragePrice = await getAveragePrice(LONG_PERIOD);
+  return markPrice > shortAveragePrice && markPrice > longAveragePrice;
+};
+
 export const getIsOpenConditionsMet = async () => {
   const results = await Promise.all([
     getIsMaxLeverageEnough(),
-    getIsOverAllPriceUpTrend()
+    getIsOverAllPriceUpTrend(),
+    getIsOverAveragePrices()
   ]);
   return results.every((result) => result);
 };
@@ -42,15 +57,9 @@ export const getIsStopLossReached = async () => {
 };
 
 export const getIsCloseConditionsMet = async () => {
-  const [isTakeProfitReached, isStopLossReached] = await Promise.all([
+  const results = await Promise.all([
     getIsTakeProfitReached(),
     getIsStopLossReached()
   ]);
-  if (isTakeProfitReached) {
-    return "isTakeProfitReached";
-  }
-  if (isStopLossReached) {
-    return "isStopLossReached";
-  }
-  return false;
+  return results.some((result) => result);
 };

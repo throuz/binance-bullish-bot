@@ -73,6 +73,14 @@ export const tickerPriceChangeStatisticsAPI = async (totalParams) => {
   return responseData;
 };
 
+export const markPriceKlineDataAPI = async (totalParams) => {
+  const responseData = await getBinanceFuturesAPI(
+    "/fapi/v1/markPriceKlines",
+    totalParams
+  );
+  return responseData;
+};
+
 // POST
 
 export const changeInitialLeverageAPI = async (totalParams) => {
