@@ -12,6 +12,7 @@ import {
   markPriceKlineDataAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
+import { heikinashi } from "technicalindicators";
 
 export const getMaxLeverage = async () => {
   const symbol = nodeCache.get("symbol");
@@ -65,12 +66,6 @@ export const getPositionInformation = async () => {
   const totalParams = { symbol, timestamp: Date.now() };
   const positionInformation = await positionInformationAPI(totalParams);
   return positionInformation[0];
-};
-
-export const getPNLPercent = async () => {
-  const positionInformation = await getPositionInformation();
-  const { unRealizedProfit, notional, leverage } = positionInformation;
-  return (unRealizedProfit / (notional / leverage)) * 100;
 };
 
 export const getAllowableQuantity = async () => {
@@ -127,18 +122,25 @@ export const getRandomSymbol = async () => {
   return symbols[randomIndex].symbol;
 };
 
-export const getClosePrices = async () => {
+export const getMarkPriceKlineData = async () => {
   const symbol = nodeCache.get("symbol");
   const totalParams = { symbol, interval: KLINE_INTERVAL };
   const markPriceKlineData = await markPriceKlineDataAPI(totalParams);
-  return markPriceKlineData.map((kline) => Number(kline[4]));
+  return markPriceKlineData;
 };
 
-export const getAveragePrice = async (period) => {
-  const closePrices = await getClosePrices();
-  const slicedClosePrices = closePrices.slice(-period);
-  const pricesSum = slicedClosePrices.reduce((a, b) => a + b, 0);
-  return pricesSum / period;
+export const getHeikinAshiKLineData = async () => {
+  const markPriceKlineData = await getMarkPriceKlineData();
+  const openPrices = markPriceKlineData.map((kline) => Number(kline[1]));
+  const highPrices = markPriceKlineData.map((kline) => Number(kline[2]));
+  const lowPrices = markPriceKlineData.map((kline) => Number(kline[3]));
+  const closePrices = markPriceKlineData.map((kline) => Number(kline[4]));
+  return heikinashi({
+    open: openPrices,
+    high: highPrices,
+    low: lowPrices,
+    close: closePrices
+  });
 };
 
 export const getPrecisionBySize = (size) => {

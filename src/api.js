@@ -65,14 +65,6 @@ export const notionalAndLeverageBracketsAPI = async (totalParams) => {
   return responseData;
 };
 
-export const tickerPriceChangeStatisticsAPI = async (totalParams) => {
-  const responseData = await getBinanceFuturesAPI(
-    "/fapi/v1/ticker/24hr",
-    totalParams
-  );
-  return responseData;
-};
-
 export const markPriceKlineDataAPI = async (totalParams) => {
   const responseData = await getBinanceFuturesAPI(
     "/fapi/v1/markPriceKlines",
