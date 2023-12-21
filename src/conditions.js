@@ -8,16 +8,26 @@ export const getIsMaxLeverageEnough = async () => {
   return maxLeverage >= MINIMUM_LEVERAGE;
 };
 
-export const getIsUpTrend = async () => {
+export const getIsJustConvertToUpTrend = async () => {
   const heikinAshiKLineData = await getHeikinAshiKLineData();
   const { open, close } = heikinAshiKLineData;
-  const lastSecondOpenPrice = open[open.length - 2];
-  const lastSecondClosePrice = close[close.length - 2];
-  return lastSecondClosePrice > lastSecondOpenPrice;
+  const trendArray = open.map((price, index) => {
+    if (price > close[index]) {
+      return "up";
+    }
+    return "down";
+  });
+  return (
+    trendArray[trendArray.length - 3] === "down" &&
+    trendArray[trendArray.length - 2] === "up"
+  );
 };
 
 export const getIsOpenConditionsMet = async () => {
-  const results = await Promise.all([getIsMaxLeverageEnough(), getIsUpTrend()]);
+  const results = await Promise.all([
+    getIsMaxLeverageEnough(),
+    getIsJustConvertToUpTrend()
+  ]);
   return results.every((result) => result);
 };
 
@@ -26,9 +36,13 @@ export const getIsOpenConditionsMet = async () => {
 export const getIsDownTrend = async () => {
   const heikinAshiKLineData = await getHeikinAshiKLineData();
   const { open, close } = heikinAshiKLineData;
-  const lastSecondOpenPrice = open[open.length - 2];
-  const lastSecondClosePrice = close[close.length - 2];
-  return lastSecondClosePrice < lastSecondOpenPrice;
+  const trendArray = open.map((price, index) => {
+    if (price > close[index]) {
+      return "up";
+    }
+    return "down";
+  });
+  return trendArray[trendArray.length - 2] === "down";
 };
 
 export const getIsCloseConditionsMet = async () => {
