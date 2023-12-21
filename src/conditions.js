@@ -12,11 +12,13 @@ export const getIsJustConvertToUpTrend = async () => {
   const heikinAshiKLineData = await getHeikinAshiKLineData();
   const { open, close } = heikinAshiKLineData;
   const trendArray = open.map((price, index) => {
-    if (price > close[index]) {
+    if (price < close[index]) {
       return "up";
     }
     return "down";
   });
+  console.log(trendArray[trendArray.length - 3]);
+  console.log(trendArray[trendArray.length - 2]);
   return (
     trendArray[trendArray.length - 3] === "down" &&
     trendArray[trendArray.length - 2] === "up"
@@ -37,7 +39,7 @@ export const getIsDownTrend = async () => {
   const heikinAshiKLineData = await getHeikinAshiKLineData();
   const { open, close } = heikinAshiKLineData;
   const trendArray = open.map((price, index) => {
-    if (price > close[index]) {
+    if (price < close[index]) {
       return "up";
     }
     return "down";
