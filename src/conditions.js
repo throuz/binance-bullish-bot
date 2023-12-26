@@ -33,8 +33,6 @@ export const getIsOverSMA = async () => {
   const heikinAshiKLineData = await getHeikinAshiKLineData();
   const { close } = heikinAshiKLineData;
   const lastPrice = close[close.length - 1];
-  console.log(lastSMA);
-  console.log(lastPrice);
   return lastPrice > lastSMA;
 };
 
