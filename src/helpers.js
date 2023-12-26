@@ -12,7 +12,7 @@ import {
   markPriceKlineDataAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
-import { heikinashi } from "technicalindicators";
+import { heikinashi, sma } from "technicalindicators";
 
 export const getMaxLeverage = async () => {
   const symbol = nodeCache.get("symbol");
@@ -141,6 +141,12 @@ export const getHeikinAshiKLineData = async () => {
     low: lowPrices,
     close: closePrices
   });
+};
+
+export const getSMAData = async () => {
+  const heikinAshiKLineData = await getHeikinAshiKLineData();
+  const { close } = heikinAshiKLineData;
+  return sma({ period: 12, values: close });
 };
 
 export const getPrecisionBySize = (size) => {
