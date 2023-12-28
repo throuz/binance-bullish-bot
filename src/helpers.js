@@ -12,7 +12,7 @@ import {
   markPriceKlineDataAPI
 } from "./api.js";
 import { nodeCache } from "./cache.js";
-import { heikinashi, sma } from "technicalindicators";
+import { heikinashi } from "technicalindicators";
 
 export const getMaxLeverage = async () => {
   const symbol = nodeCache.get("symbol");
@@ -122,15 +122,15 @@ export const getRandomSymbol = async () => {
   return symbols[randomIndex].symbol;
 };
 
-export const getMarkPriceKlineData = async () => {
+export const getMarkPriceKlineData = async (interval = KLINE_INTERVAL) => {
   const symbol = nodeCache.get("symbol");
-  const totalParams = { symbol, interval: KLINE_INTERVAL };
+  const totalParams = { symbol, interval };
   const markPriceKlineData = await markPriceKlineDataAPI(totalParams);
   return markPriceKlineData;
 };
 
-export const getHeikinAshiKLineData = async () => {
-  const markPriceKlineData = await getMarkPriceKlineData();
+export const getHeikinAshiKLineData = async (interval = KLINE_INTERVAL) => {
+  const markPriceKlineData = await getMarkPriceKlineData(interval);
   const openPrices = markPriceKlineData.map((kline) => Number(kline[1]));
   const highPrices = markPriceKlineData.map((kline) => Number(kline[2]));
   const lowPrices = markPriceKlineData.map((kline) => Number(kline[3]));
@@ -141,12 +141,6 @@ export const getHeikinAshiKLineData = async () => {
     low: lowPrices,
     close: closePrices
   });
-};
-
-export const getSMAData = async () => {
-  const heikinAshiKLineData = await getHeikinAshiKLineData();
-  const { close } = heikinAshiKLineData;
-  return sma({ period: 12, values: close });
 };
 
 export const getPrecisionBySize = (size) => {

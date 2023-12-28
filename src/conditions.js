@@ -1,9 +1,5 @@
 import { MINIMUM_LEVERAGE } from "../configs/trade-config.js";
-import {
-  getMaxLeverage,
-  getHeikinAshiKLineData,
-  getSMAData
-} from "./helpers.js";
+import { getMaxLeverage, getHeikinAshiKLineData } from "./helpers.js";
 
 // Open conditions
 
@@ -27,27 +23,24 @@ export const getIsJustConvertToUpTrend = async () => {
   );
 };
 
-export const getIsOverSMA = async () => {
-  const smaData = await getSMAData();
-  const lastSMA = smaData[smaData.length - 1];
-  const heikinAshiKLineData = await getHeikinAshiKLineData();
-  const { close } = heikinAshiKLineData;
-  const lastPrice = close[close.length - 1];
-  return lastPrice > lastSMA;
+export const getIsUpTrend = async () => {
+  const heikinAshiKLineData = await getHeikinAshiKLineData("1h");
+  const { open, close } = heikinAshiKLineData;
+  return open[open.length - 1] < close[close.length - 1];
 };
 
 export const getIsOpenConditionsMet = async () => {
   const results = await Promise.all([
     getIsMaxLeverageEnough(),
     getIsJustConvertToUpTrend(),
-    getIsOverSMA()
+    getIsUpTrend()
   ]);
   return results.every((result) => result);
 };
 
 // Close conditions
 
-export const getIsDownTrend = async () => {
+export const getIsJustConvertToDownTrend = async () => {
   const heikinAshiKLineData = await getHeikinAshiKLineData();
   const { open, close } = heikinAshiKLineData;
   const trendArray = open.map((price, index) => {
@@ -60,6 +53,6 @@ export const getIsDownTrend = async () => {
 };
 
 export const getIsCloseConditionsMet = async () => {
-  const results = await Promise.all([getIsDownTrend()]);
+  const results = await Promise.all([getIsJustConvertToDownTrend()]);
   return results.some((result) => result);
 };
