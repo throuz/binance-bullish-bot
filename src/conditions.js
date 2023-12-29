@@ -26,7 +26,7 @@ export const getIsJustConvertToUpTrend = async () => {
 export const getIsUpTrend = async () => {
   const heikinAshiKLineData = await getHeikinAshiKLineData("1h");
   const { open, close } = heikinAshiKLineData;
-  return open[open.length - 1] < close[close.length - 1];
+  return open[open.length - 2] < close[close.length - 2];
 };
 
 export const getIsOpenConditionsMet = async () => {
