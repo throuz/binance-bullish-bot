@@ -1,6 +1,15 @@
 import { MINIMUM_LEVERAGE } from "../configs/trade-config.js";
 import { getMaxLeverage, getHeikinAshiKLineData } from "./helpers.js";
 
+export const getTrendArray = async () => {
+  const heikinAshiKLineData = await getHeikinAshiKLineData();
+  const { open, close } = heikinAshiKLineData;
+  const trendArray = open.map((price, index) =>
+    price < close[index] ? "up" : "down"
+  );
+  return trendArray;
+};
+
 // Open conditions
 
 export const getIsMaxLeverageEnough = async () => {
@@ -9,31 +18,17 @@ export const getIsMaxLeverageEnough = async () => {
 };
 
 export const getIsJustConvertToUpTrend = async () => {
-  const heikinAshiKLineData = await getHeikinAshiKLineData();
-  const { open, close } = heikinAshiKLineData;
-  const trendArray = open.map((price, index) => {
-    if (price < close[index]) {
-      return "up";
-    }
-    return "down";
-  });
+  const trendArray = await getTrendArray();
   return (
     trendArray[trendArray.length - 3] === "down" &&
     trendArray[trendArray.length - 2] === "up"
   );
 };
 
-export const getIsUpTrend = async () => {
-  const heikinAshiKLineData = await getHeikinAshiKLineData("1h");
-  const { open, close } = heikinAshiKLineData;
-  return open[open.length - 2] < close[close.length - 2];
-};
-
 export const getIsOpenConditionsMet = async () => {
   const results = await Promise.all([
     getIsMaxLeverageEnough(),
-    getIsJustConvertToUpTrend(),
-    getIsUpTrend()
+    getIsJustConvertToUpTrend()
   ]);
   return results.every((result) => result);
 };
@@ -41,14 +36,7 @@ export const getIsOpenConditionsMet = async () => {
 // Close conditions
 
 export const getIsJustConvertToDownTrend = async () => {
-  const heikinAshiKLineData = await getHeikinAshiKLineData();
-  const { open, close } = heikinAshiKLineData;
-  const trendArray = open.map((price, index) => {
-    if (price < close[index]) {
-      return "up";
-    }
-    return "down";
-  });
+  const trendArray = await getTrendArray();
   return trendArray[trendArray.length - 2] === "down";
 };
 
