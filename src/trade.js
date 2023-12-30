@@ -8,6 +8,7 @@ import {
   getPositionInformation,
   getStepSize
 } from "./helpers.js";
+import { getStorageData, setStorageData } from "../storage/storage.js";
 
 export const changeToMaxLeverage = async () => {
   const symbol = nodeCache.get("symbol");
@@ -32,13 +33,14 @@ export const openPosition = async () => {
     await changeToMaxLeverage();
   }
   const symbol = nodeCache.get("symbol");
+  const openSide = await getStorageData("openSide");
   const [orderQuantity, stepSize] = await Promise.all([
     getOrderQuantity(),
     getStepSize()
   ]);
   await newOrder({
     symbol,
-    side: "BUY",
+    side: openSide,
     type: "MARKET",
     quantity: formatBySize(orderQuantity, stepSize),
     timestamp: Date.now()
@@ -48,16 +50,22 @@ export const openPosition = async () => {
 
 export const closePosition = async () => {
   const positionInformation = await getPositionInformation();
-  const { positionAmt } = positionInformation;
+  const { positionAmt, unRealizedProfit } = positionInformation;
   if (positionAmt > 0) {
     const symbol = nodeCache.get("symbol");
+    const openSide = await getStorageData("openSide");
+    const closeSide = await getStorageData("closeSide");
     await newOrder({
       symbol,
-      side: "SELL",
+      side: closeSide,
       type: "MARKET",
       quantity: positionAmt,
       timestamp: Date.now()
     });
     await sendLineNotify("Close position!");
+    if (unRealizedProfit < 0) {
+      setStorageData("openSide", closeSide);
+      setStorageData("closeSide", openSide);
+    }
   }
 };

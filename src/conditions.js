@@ -1,5 +1,6 @@
 import { MINIMUM_LEVERAGE } from "../configs/trade-config.js";
 import { getMaxLeverage, getHeikinAshiKLineData } from "./helpers.js";
+import { getStorageData } from "../storage/storage.js";
 
 export const getTrendArray = async () => {
   const heikinAshiKLineData = await getHeikinAshiKLineData();
@@ -17,12 +18,22 @@ export const getIsMaxLeverageEnough = async () => {
   return maxLeverage >= MINIMUM_LEVERAGE;
 };
 
-export const getIsJustConvertToUpTrend = async () => {
+export const getIsJustStartTrend = async () => {
   const trendArray = await getTrendArray();
-  return (
-    trendArray[trendArray.length - 3] === "down" &&
-    trendArray[trendArray.length - 2] === "up"
-  );
+  const openSide = await getStorageData("openSide");
+  if (openSide === "BUY") {
+    return (
+      trendArray[trendArray.length - 3] === "down" &&
+      trendArray[trendArray.length - 2] === "up"
+    );
+  }
+  if (openSide === "SELL") {
+    return (
+      trendArray[trendArray.length - 3] === "up" &&
+      trendArray[trendArray.length - 2] === "down"
+    );
+  }
+  return false;
 };
 
 export const getIsOpenConditionsMet = async () => {
@@ -35,9 +46,16 @@ export const getIsOpenConditionsMet = async () => {
 
 // Close conditions
 
-export const getIsJustConvertToDownTrend = async () => {
+export const getIsJustEndTrend = async () => {
   const trendArray = await getTrendArray();
-  return trendArray[trendArray.length - 2] === "down";
+  const openSide = await getStorageData("openSide");
+  if (openSide === "BUY") {
+    return trendArray[trendArray.length - 2] === "down";
+  }
+  if (openSide === "SELL") {
+    return trendArray[trendArray.length - 2] === "up";
+  }
+  return false;
 };
 
 export const getIsCloseConditionsMet = async () => {
