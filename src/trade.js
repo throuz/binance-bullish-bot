@@ -1,5 +1,4 @@
 import { changeInitialLeverageAPI, newOrderAPI } from "./api.js";
-import { nodeCache } from "./cache.js";
 import { sendLineNotify } from "./common.js";
 import {
   formatBySize,
@@ -11,7 +10,7 @@ import {
 import { getStorageData, setStorageData } from "../storage/storage.js";
 
 export const changeToMaxLeverage = async () => {
-  const symbol = nodeCache.get("symbol");
+  const symbol = await getStorageData("symbol");
   const maxLeverage = await getMaxLeverage();
   const totalParams = { symbol, leverage: maxLeverage, timestamp: Date.now() };
   await changeInitialLeverageAPI(totalParams);
@@ -32,7 +31,7 @@ export const openPosition = async () => {
   if (Number(positionInformation.leverage) !== maxLeverage) {
     await changeToMaxLeverage();
   }
-  const symbol = nodeCache.get("symbol");
+  const symbol = await getStorageData("symbol");
   const openSide = await getStorageData("openSide");
   const [orderQuantity, stepSize] = await Promise.all([
     getOrderQuantity(),
@@ -52,7 +51,7 @@ export const closePosition = async () => {
   const positionInformation = await getPositionInformation();
   const { positionAmt, unRealizedProfit } = positionInformation;
   if (positionAmt > 0) {
-    const symbol = nodeCache.get("symbol");
+    const symbol = await getStorageData("symbol");
     const openSide = await getStorageData("openSide");
     const closeSide = await getStorageData("closeSide");
     await newOrder({

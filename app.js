@@ -3,25 +3,18 @@ import { errorHandler, logWithTime, sendLineNotify } from "./src/common.js";
 import {
   getRandomSymbol,
   getAvailableBalance,
-  getHasPositions,
-  getCurrentPositionSymbol
+  getHasPositions
 } from "./src/helpers.js";
 import { openPosition, closePosition } from "./src/trade.js";
-import { nodeCache } from "./src/cache.js";
 import {
   getIsOpenConditionsMet,
   getIsCloseConditionsMet
 } from "./src/conditions.js";
-
-const hasPositions = await getHasPositions();
-if (hasPositions) {
-  const currentPositionSymbol = await getCurrentPositionSymbol();
-  nodeCache.set("symbol", currentPositionSymbol, 0);
-}
+import { setStorageData } from "./storage/storage.js";
 
 const setRandomSymbol = async () => {
   const randomSymbol = await getRandomSymbol();
-  nodeCache.set("symbol", randomSymbol, 0);
+  await setStorageData("symbol", randomSymbol);
   logWithTime(`randomSymbol: ${randomSymbol}`);
 };
 

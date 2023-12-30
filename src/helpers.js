@@ -11,11 +11,11 @@ import {
   positionInformationAPI,
   markPriceKlineDataAPI
 } from "./api.js";
-import { nodeCache } from "./cache.js";
 import { heikinashi } from "technicalindicators";
+import { getStorageData } from "../storage/storage.js";
 
 export const getMaxLeverage = async () => {
-  const symbol = nodeCache.get("symbol");
+  const symbol = await getStorageData("symbol");
   const totalParams = { symbol, timestamp: Date.now() };
   const notionalAndLeverageBrackets = await notionalAndLeverageBracketsAPI(
     totalParams
@@ -25,7 +25,7 @@ export const getMaxLeverage = async () => {
 
 export const getStepSize = async () => {
   const exchangeInformation = await exchangeInformationAPI();
-  const symbol = nodeCache.get("symbol");
+  const symbol = await getStorageData("symbol");
   const symbolData = exchangeInformation.symbols.find(
     (item) => item.symbol === symbol
   );
@@ -45,7 +45,7 @@ export const getAvailableBalance = async () => {
 };
 
 export const getMarkPrice = async () => {
-  const symbol = nodeCache.get("symbol");
+  const symbol = await getStorageData("symbol");
   const totalParams = { symbol };
   const markPrice = await markPriceAPI(totalParams);
   return markPrice.markPrice;
@@ -62,7 +62,7 @@ export const getAvailableQuantity = async () => {
 };
 
 export const getPositionInformation = async () => {
-  const symbol = nodeCache.get("symbol");
+  const symbol = await getStorageData("symbol");
   const totalParams = { symbol, timestamp: Date.now() };
   const positionInformation = await positionInformationAPI(totalParams);
   return positionInformation[0];
@@ -97,12 +97,6 @@ export const getHasPositions = async () => {
   return allPositionInformation.some((info) => info.positionAmt > 0);
 };
 
-export const getCurrentPositionSymbol = async () => {
-  const allPositionInformation = await getAllPositionInformation();
-  const foundInfo = allPositionInformation.find((info) => info.positionAmt > 0);
-  return foundInfo.symbol;
-};
-
 export const getOrderQuantity = async () => {
   const investableQuantity = await getInvestableQuantity();
   const orderQuantity = investableQuantity * (ORDER_AMOUNT_PERCENT / 100);
@@ -123,7 +117,7 @@ export const getRandomSymbol = async () => {
 };
 
 export const getMarkPriceKlineData = async (interval = KLINE_INTERVAL) => {
-  const symbol = nodeCache.get("symbol");
+  const symbol = await getStorageData("symbol");
   const totalParams = { symbol, interval };
   const markPriceKlineData = await markPriceKlineDataAPI(totalParams);
   return markPriceKlineData;
