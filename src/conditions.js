@@ -39,7 +39,7 @@ export const getIsJustStartTrend = async () => {
 export const getIsOpenConditionsMet = async () => {
   const results = await Promise.all([
     getIsMaxLeverageEnough(),
-    getIsJustConvertToUpTrend()
+    getIsJustStartTrend()
   ]);
   return results.every((result) => result);
 };
@@ -59,6 +59,6 @@ export const getIsJustEndTrend = async () => {
 };
 
 export const getIsCloseConditionsMet = async () => {
-  const results = await Promise.all([getIsJustConvertToDownTrend()]);
+  const results = await Promise.all([getIsJustEndTrend()]);
   return results.some((result) => result);
 };
