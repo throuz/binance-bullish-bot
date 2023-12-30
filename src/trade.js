@@ -63,8 +63,8 @@ export const closePosition = async () => {
     });
     await sendLineNotify("Close position!");
     if (unRealizedProfit < 0) {
-      setStorageData("openSide", closeSide);
-      setStorageData("closeSide", openSide);
+      await setStorageData("openSide", closeSide);
+      await setStorageData("closeSide", openSide);
     }
   }
 };
