@@ -50,7 +50,8 @@ export const openPosition = async () => {
 export const closePosition = async () => {
   const positionInformation = await getPositionInformation();
   const { positionAmt, unRealizedProfit } = positionInformation;
-  if (positionAmt > 0) {
+  const amount = Math.abs(positionAmt);
+  if (amount > 0) {
     const symbol = await getStorageData("symbol");
     const openSide = await getStorageData("openSide");
     const closeSide = await getStorageData("closeSide");
@@ -58,7 +59,7 @@ export const closePosition = async () => {
       symbol,
       side: closeSide,
       type: "MARKET",
-      quantity: positionAmt,
+      quantity: amount,
       timestamp: Date.now()
     });
     await sendLineNotify("Close position!");

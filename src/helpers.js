@@ -75,7 +75,7 @@ export const getAllowableQuantity = async () => {
   ]);
   const { maxNotionalValue, positionAmt } = positionInformation;
   const maxAllowableQuantity = maxNotionalValue / markPrice;
-  return maxAllowableQuantity - positionAmt;
+  return maxAllowableQuantity - Math.abs(positionAmt);
 };
 
 export const getInvestableQuantity = async () => {
@@ -94,7 +94,7 @@ export const getAllPositionInformation = async () => {
 
 export const getHasPositions = async () => {
   const allPositionInformation = await getAllPositionInformation();
-  return allPositionInformation.some((info) => info.positionAmt > 0);
+  return allPositionInformation.some((info) => Math.abs(info.positionAmt) > 0);
 };
 
 export const getOrderQuantity = async () => {
