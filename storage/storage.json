@@ -1,1 +1,6 @@
-{ "openSide": "SELL", "closeSide": "BUY", "symbol": "BONDUSDT" }
+{
+  "openSide": "SELL",
+  "closeSide": "BUY",
+  "symbol": "ICPUSDT",
+  "lastResult": "WIN"
+}

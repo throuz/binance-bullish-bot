@@ -62,10 +62,13 @@ export const closePosition = async () => {
       quantity: amount,
       timestamp: Date.now()
     });
-    await sendLineNotify("Close position!");
-    if (unRealizedProfit < 0) {
+    if (unRealizedProfit > 0) {
+      await setStorageData("lastResult", "WIN");
+    } else {
+      await setStorageData("lastResult", "LOSS");
       await setStorageData("openSide", closeSide);
       await setStorageData("closeSide", openSide);
     }
+    await sendLineNotify("Close position!");
   }
 };

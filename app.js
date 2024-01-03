@@ -10,7 +10,7 @@ import {
   getIsOpenConditionsMet,
   getIsCloseConditionsMet
 } from "./src/conditions.js";
-import { setStorageData } from "./storage/storage.js";
+import { getStorageData, setStorageData } from "./storage/storage.js";
 
 const setRandomSymbol = async () => {
   const randomSymbol = await getRandomSymbol();
@@ -28,7 +28,10 @@ const executeTradingStrategy = async () => {
     const hasPositions = await getHasPositions();
     logWithTime(`hasPositions: ${hasPositions}`);
     if (!hasPositions) {
-      await setRandomSymbol();
+      const lastResult = await getStorageData("lastResult");
+      if (lastResult === "LOSS") {
+        await setRandomSymbol();
+      }
       const isOpenConditionsMet = await getIsOpenConditionsMet();
       logWithTime(`isOpenConditionsMet: ${isOpenConditionsMet}`);
       if (isOpenConditionsMet) {
