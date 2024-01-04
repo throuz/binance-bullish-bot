@@ -1,5 +1,12 @@
-import { MINIMUM_LEVERAGE } from "../configs/trade-config.js";
-import { getMaxLeverage, getHeikinAshiKLineData } from "./helpers.js";
+import {
+  MINIMUM_LEVERAGE,
+  STOP_LOSS_PERCENT
+} from "../configs/trade-config.js";
+import {
+  getMaxLeverage,
+  getHeikinAshiKLineData,
+  getPNLPercent
+} from "./helpers.js";
 import { getStorageData } from "../storage/storage.js";
 
 export const getTrendArray = async () => {
@@ -58,7 +65,12 @@ export const getIsJustEndTrend = async () => {
   return false;
 };
 
+export const getIsStopLoss = async () => {
+  const PNLPercent = await getPNLPercent();
+  return PNLPercent < STOP_LOSS_PERCENT;
+};
+
 export const getIsCloseConditionsMet = async () => {
-  const results = await Promise.all([getIsJustEndTrend()]);
+  const results = await Promise.all([getIsJustEndTrend(), getIsStopLoss()]);
   return results.some((result) => result);
 };

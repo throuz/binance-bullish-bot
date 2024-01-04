@@ -68,6 +68,12 @@ export const getPositionInformation = async () => {
   return positionInformation[0];
 };
 
+export const getPNLPercent = async () => {
+  const positionInformation = await getPositionInformation();
+  const { unRealizedProfit, notional, leverage } = positionInformation;
+  return (unRealizedProfit / (Math.abs(notional) / leverage)) * 100;
+};
+
 export const getAllowableQuantity = async () => {
   const [positionInformation, markPrice] = await Promise.all([
     getPositionInformation(),
