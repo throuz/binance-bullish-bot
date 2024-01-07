@@ -1,5 +1,6 @@
 import {
   MINIMUM_LEVERAGE,
+  TAKE_PROFIT_PERCENT,
   STOP_LOSS_PERCENT
 } from "../configs/trade-config.js";
 import {
@@ -65,12 +66,18 @@ export const getIsJustEndTrend = async () => {
   return false;
 };
 
+export const getIsTakeProfit = async () => {
+  const isJustEndTrend = await getIsJustEndTrend();
+  const PNLPercent = await getPNLPercent();
+  return isJustEndTrend && PNLPercent > TAKE_PROFIT_PERCENT;
+};
+
 export const getIsStopLoss = async () => {
   const PNLPercent = await getPNLPercent();
   return PNLPercent < STOP_LOSS_PERCENT;
 };
 
 export const getIsCloseConditionsMet = async () => {
-  const results = await Promise.all([getIsJustEndTrend(), getIsStopLoss()]);
+  const results = await Promise.all([getIsTakeProfit(), getIsStopLoss()]);
   return results.some((result) => result);
 };
